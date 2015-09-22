@@ -21,7 +21,8 @@ return [
                         'text-exercise',
                         'video',
                         'course',
-                        'text-exercise-group'
+                        'text-exercise-group',
+                        'math-puzzle'
                     ]
                 ],
                 'englisch'                 => [
@@ -124,7 +125,8 @@ return [
                         'text-exercise',
                         'video',
                         'course',
-                        'text-exercise-group'
+                        'text-exercise-group',
+                        'math-puzzle'
                     ]
                 ]
             ]
