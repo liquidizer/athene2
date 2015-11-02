@@ -26,9 +26,4 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.customize ['modifyvm', :id, '--natdnsproxy1', 'off']
     vb.customize ["modifyvm", :id, "--memory", "1024"]
   end
-
-  config.trigger.after :up do
-    run "vagrant ssh -c 'sh /vagrant/bin/vagrant/boot.sh'"
-    run "vagrant rsync-auto"
-  end
 end

@@ -1,0 +1,9 @@
+ECHO Starting Vagrant.sh...
+START /W vagrant up
+ECHO Running boot.sh...
+START /W vagrant ssh -c 'sh /vagrant/bin/vagrant/boot.sh'
+ECHO Syncing files...
+START vagrant rsync-auto
+PAUSE
+START /W vagrant halt
+ECHO vagrant halted
