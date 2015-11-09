@@ -1,6 +1,6 @@
 /*global define*/
 
-define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
+define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
     d3.ns.prefix.top = 'http://www.dadim.de/touchop';
 
     var makePuzzle = function (parent, obj) {
@@ -11,12 +11,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             .attr('width','100%')
             .attr('height','100%')
             .attr('viewBox','0 0 600 400');
-            // .attr('onmousemove',"touchop.msMove(evt)")
-            // .attr('ontouchmove',"touchop.msMove(evt)")
-            // .attr('onmouseup',"touchop.msUp(evt)")
-            // .attr('ontouchend',"touchop.msUp(evt)")
-            // .attr('onmousedown',"touchop.msBlur(evt)")
-            // .attr('ontouchstart',"touchop.msBlur(evt)");
         svg.on('mousemove', touchop.msMove);
         svg.on('touchmove', touchop.msMove);
         svg.on('mouseup', touchop.msUp);
@@ -160,49 +154,47 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             g.append('text').text('*');
             addOperand(g);
         }
+
+        // Addition operator
+        function addPlus(elt) {
+            var g = elt.append('g')
+                //.attr('onmousedown',"touchop.msDown(evt)")
+                .attr('top:value',"#1 + #2")
+                .attr('top:priority',"120")
+                .attr('top:layout',"horizontalLayout(obj)")
+                .attr('data-ismovable', 'true');
+            g.on('mousedown',touchop.msDown);
+            g.append('rect')
+                .attr('class','background')
+                .attr('rx',5).attr('ry',5);
+            addOperand(g);
+            g.append('text').text('+');
+            addOperand(g);
+        }
+
+        // Difference operator
+        function addMinus(elt) {
+            var g = elt.append('g')
+                //.attr('onmousedown',"touchop.msDown(evt)")
+                .attr('top:value',"#1 - #2")
+                .attr('top:priority',"111")
+                .attr('top:layout',"horizontalLayout(obj)")
+                .attr('data-ismovable', 'true');
+            g.on('mousedown',touchop.msDown);
+            g.append('rect')
+                .attr('class','background')
+                .attr('rx',5).attr('ry',5);
+            addOperand(g);
+            g.append('text').text('-');
+            addOperand(g);
+        }
     };
 
-    // Multiplication operator
-    function addPlus(elt) {
-        var g = elt.append('g')
-            //.attr('onmousedown',"touchop.msDown(evt)")
-            .attr('top:value',"#1 + #2")
-            .attr('top:priority',"120")
-            .attr('top:layout',"horizontalLayout(obj)")
-            .attr('data-ismovable', 'true');
-        g.on('mousedown',touchop.msDown);
-        g.append('rect')
-            .attr('class','background')
-            .attr('rx',5).attr('ry',5);
-        addOperand(g);
-        g.append('text').text('+');
-        addOperand(g);
-    }
-};
-
-// Multiplication operator
-function addMinus(elt) {
-    var g = elt.append('g')
-        //.attr('onmousedown',"touchop.msDown(evt)")
-        .attr('top:value',"#1 - #2")
-        .attr('top:priority',"111")
-        .attr('top:layout',"horizontalLayout(obj)")
-        .attr('data-ismovable', 'true');
-    g.on('mousedown',touchop.msDown);
-    g.append('rect')
-        .attr('class','background')
-        .attr('rx',5).attr('ry',5);
-    addOperand(g);
-    g.append('text').text('-');
-    addOperand(g);
-}
-};
-
-    var MathPuzzle = function () {
+    $.fn.MathPuzzle = function () {
         return $(this).each(function () {
             makePuzzle(this, $(this).data('source'));
         });
     };
 
-    $.fn.MathPuzzle = MathPuzzle;
+    return { makePuzzle : makePuzzle }
 });

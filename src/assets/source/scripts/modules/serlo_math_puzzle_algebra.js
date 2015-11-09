@@ -7,7 +7,7 @@
   */
 /*global define*/
 
- define([], function () {
+ define('math_puzzle_algebra', [], function () {
      var topns = 'http://www.dadim.de/touchop'
 
      // Exactract the formula for the user created value.

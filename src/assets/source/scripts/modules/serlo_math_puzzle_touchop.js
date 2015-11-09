@@ -9,7 +9,7 @@
 
 /*global define, require, window, Modernizr, GGBApplet*/
 
-define(['d3', 'math_puzzle_algebra'], function (d3, algebra) {
+define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algebra) {
     "use strict";
     /* Touchop - Touchable operators
      *
