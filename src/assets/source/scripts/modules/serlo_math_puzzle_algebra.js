@@ -57,11 +57,11 @@
          var win= true;
 
          // break if formula is incomplete
-         if (value==null || value.indexOf("#")>=0)
-     	return;
+         if (value==null || value.indexOf("#")>=0) return;
 
          // construct the objective function
-         var goal= document.getElementById("test").getAttribute("win");
+         while (!obj.getAttribute('data-goal')) obj = obj.parentNode;
+         var goal= obj.getAttribute("data-goal");
          if (goal) {
              // standard pattern
              goal= "("+value+") - ("+goal+")";

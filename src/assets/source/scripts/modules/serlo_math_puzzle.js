@@ -4,8 +4,7 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
     d3.ns.prefix.top = 'http://www.dadim.de/touchop';
 
     var makePuzzle = function (parent, obj) {
-        console.log(parent);
-        eval("obj="+obj);
+
         var svg = d3.select(parent)
             .append("svg")
             .attr('width','100%')
@@ -18,22 +17,7 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         svg.on('mousedown', touchop.msBlur);
         svg.on('touchstart', touchop.msBlur);
 
-        // insert the background image
-        if (obj.image) {
-            svg.style('background-image','url('+obj.image+')');
-            svg.style('background-repeat','no-repeat');
-            svg.style('background-position','50 100');
-        }
-
-        // insert question text
-        if (obj.question) {
-            var test = svg.append('g')
-                .attr('transform','translate(50,60)');
-            test.append('text')
-                .attr('id','test')
-                .attr('win',obj.solution)
-                .text(obj.question);
-        }
+        svg.attr('data-goal', obj.split(/=/)[0]);
 
         // Emoticon
         var emog = svg.append('g')
@@ -52,21 +36,21 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
             .attr('width',81).attr('height',81);
 
         // insert the operators
-        for (var i in obj.elements) {
-            var elt = obj.elements[i];
-            var op = svg.append('g');
-            if (elt.x && elt.y) {
-                op.attr('transform','translate('+parseInt(elt.x)+','+parseInt(elt.y)+')');
-            }
-            if (elt.value) {
-                addAtom(op, elt.value);
-            } else if (elt.op) {
-                switch (elt.op) {
-                    case "divide" : addDivide(op); break;
-                    case "times" : addTimes(op); break;
-                    case "plus" : addPlus(op); break;
-                    case "minus" : addMinus(op); break;
-                }
+        var x=100, y=200;
+        var ops = obj.replace(/.*= */,'').split(/ +/);
+        for (var i in ops) {
+            var elt = ops[i];
+            var op = svg.append('g')
+              .attr('transform','translate('+parseInt(x)+','+parseInt(y)+')');
+            x += 100;
+            switch (elt) {
+                case "/" : addDivide(op); break;
+                case "*" : addTimes(op); break;
+                case "+" : addPlus(op); break;
+                case "-" : addMinus(op); break;
+                default :
+                  if (elt.match(/[a-zA-Z0-9.]+/)) addAtom(op, elt);
+                  break;
             }
         }
         touchop.deepLayout(svg[0][0], true);
