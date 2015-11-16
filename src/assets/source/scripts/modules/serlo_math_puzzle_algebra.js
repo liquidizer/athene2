@@ -60,7 +60,7 @@
            smile(0.0);
            return;
          }
-         
+
          // construct the objective function
          while (!obj.getAttribute('data-goal')) obj = obj.parentNode;
          var goal= obj.getAttribute("data-goal");
@@ -72,7 +72,7 @@
              goal= goal.replace(/([0-9a-zA-Z]+)\u00b3/g, 'Math.pow($1,3)');
 
              // check for free variables
-             var vars= goal.match(/[a-zA-Z]+([,) ])/g);
+             var vars= goal.match(/[a-zA-Z]+[^(.]/g);
              if (vars==null) vars=[];
 
              try {
@@ -80,10 +80,9 @@
          	for (var i=0; win && i<tries; ++i) {
          	    var eps= goal;
          	    for (var j=0; j<vars.length; ++j) {
-         		var no= "("+(Math.random()*6-3)+")";
-         		var name= vars[j].substring(0,vars[j].length-1);
-         		var term= vars[j].charAt(vars[j].length-1);
-         		eps= eps.replace(new RegExp(name+"([, )])","g"), no + "$1");
+                var name = vars[j].replace(/.$/,'');
+         		     var no= "("+(Math.random()*6-3)+")";
+         		      eps= eps.replace(new RegExp(name,"g"), no);
          	    }
          	    // compare with the objective value
          	    win= win && Math.abs(eval(eps))<1e-10;
