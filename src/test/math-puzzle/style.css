@@ -4,54 +4,23 @@ text {
 .atom {
     text-anchor: middle;
 }
-.background {
+#answer .background, .palette .background {
     fill: deepskyblue;
     stroke: #00B0E0;
     stroke-width: 1;
 }
-
-.playback .background {
-    fill: #CC0000;
-    stroke: black;
-    stroke-width: 2;
+.background {
+    fill : lightgray;
 }
 
-.invalid .background {
-    fill: lightgray;
-    stroke: gray;
-    stroke-width: 1;
-}
-.valid .background {
-    fill: DarkSeaGreen;
-}
-
-.program .background {
-    stroke: black;
-    stroke-width: 1px;
-}    
-
-.program > text {
-    font-size: 12pt;
-}
-
-.image > .background {
-    stroke: black;
-    stroke-width: 1px;
-    fill: lightgray;
-}    
-
-.image text {
-    font-size: 12pt;
+.operand > .background {
+    fill: #ffffe0 !IMPORTANT;
+    stroke: black !IMPORTANT;
 }
 
 .shadow {
     fill: black;
     opacity: 0.4;
-}
-
-.operand > .background {
-    fill: #ffffe0;
-    stroke: black;
 }
 
 #plotpath {

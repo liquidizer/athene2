@@ -7,11 +7,18 @@
   <link rel="stylesheet" href="style.css"></head>
   <script>
   require(["math_puzzle_init"], function(touchop) {
-      touchop.makePuzzle(document.getElementById("puzzle-here"), "2= 1 + 1");
+    var update = function() {
+      touchop.makePuzzle(document.getElementById("puzzle-here"), document.getElementById("code").value);
+    }
+    document.getElementById("code").addEventListener("change", update);
+    update();
   })
   </script>
 </head>
 <body>
+  <div>
+    <input id="code" value="2 = 1 + 1"/>
+  </div>
   <div id="puzzle-here">
   </div>
 </body>

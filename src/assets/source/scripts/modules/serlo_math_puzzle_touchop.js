@@ -1,25 +1,14 @@
 /**
  *
- * Athene2 - Advanced Learning Resources Manager
+ * Interactive Mathematical Puzzles
  *
- * @author  Julian Kempff (julian.kempff@serlo.org)
+ * @author  Stefan Dirnstorfer
  * @license   http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link        https://github.com/serlo-org/athene2 for the canonical source repository
  */
 
-/*global define, require, window, Modernizr, GGBApplet*/
-
-define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algebra) {
+define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     "use strict";
-    /* Touchop - Touchable operators
-     *
-     * Copyright(C) 2008, 2011, Stefan Dirnstorfer
-     * This software may be copied, distributed and modified under the terms
-     * of the GPL (http://www.gnu.org/licenses/gpl.html)
-     */
-
-    // The namespace of additional attributes interpreted by this module
-    var topns = "http://www.dadim.de/touchop";
 
     // DnD frame work
     // hand is a reference to the object currently beeing dragged.
@@ -32,25 +21,40 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     // position for long click action, after which the top group is selected
     var longClick = [0, 0];
 
-    // Initialize the touchop framework.
-    window.onload = function () {
-        // Relayout all objects on the screen
-        deepLayout(document.childNodes[0], true);
-    };
+    // setup event listeners for the svg canvas
+    function setupCanvas(svgElement) {
+        svgElement.addEventListener('mousemove', msMove);
+        svgElement.addEventListener('touchmove', msMove);
+        svgElement.addEventListener('mouseup', msUp);
+        svgElement.addEventListener('touchend', msMove);
+        svgElement.addEventListener('mousedown', msBlur);
+        svgElement.addEventListener('touchstart', msBlur);
+        deepLayout(svgElement, true);
+    }
+
+    // setup event listeners for an element. This function is called
+    // after an element is moved out of the palette
+    function setupElement(elt) {
+      elt.addEventListener('mousedown', msDown);
+      elt.addEventListener('touchdown', msDown);
+      elt.setAttribute('data-ismovable','true');
+      var operands = elt.querySelectorAll('.operand')
+      for (var i=0; i<operands.length; ++i) {
+        operands[i].removeAttribute('blocked');
+      }
+  sendHome(elt);
+    }
 
     // Perform an initial layout of all objects on the screen.
     function deepLayout(obj, doFloat) {
         if (obj.nodeType == 1 && obj.getAttribute("display") != "none") {
             // layout children
-            var isObj = obj.getAttribute("onmousedown") == "msDown(evt)";
-            if (isObj) {
-                obj.setAttribute("ontouchstart", obj.getAttribute("onmousedown"));
-            }
+            var isObj = obj.getAttribute("data-ismovable");
             for (var i = 0; i < obj.childNodes.length; ++i) {
-                deepLayout(obj.childNodes[i], !isObj && doFloat);
+                deepLayout(obj.childNodes[i], isObj=="" && doFloat);
             }
             // call layout function if available
-            var command = obj.getAttributeNS(topns, "layout");
+            var command = obj.getAttribute("data-layout");
             command && eval(command);
 
             // set Floating
@@ -83,7 +87,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
 
     // msDown is called whenever the mouse button is pressed anywhere on the root document.
     function msDown(evt) {
-        var evt = translateTouch(d3.event);
+        var evt = translateTouch(evt);
         if (hand == null && evt.target != null) {
             // find signaling object
             touchOnly = evt.isTouch;
@@ -106,8 +110,8 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     }
 
     // Mouse clicked on the background
-    function msBlur() {
-        d3.event.preventDefault();
+    function msBlur(evt) {
+        evt.preventDefault();
         if (document.activeElement && document.activeElement.blur)
             document.activeElement.blur();
         return false;
@@ -116,25 +120,16 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     // This function is called when the mouse button is released.
     function msUp(evt) {
         if (hand != null) {
-            var root = findRoot(hand);
-            releaseHand();
-
-            // algebra.verify winning test after mouse release
-            algebra.verify(root, true);
+            hand.removeAttribute("pointer-events");
+            if (hand.getAttribute('opacity'))
+                hand.parentNode.removeChild(hand);
+            hand = null;
         }
-    }
-
-    function releaseHand() {
-        // make object receive mouse events again, release grip
-        hand.removeAttribute("pointer-events");
-
-        // delete reference to hand object.
-        hand = null;
     }
 
     // Move the grabbed object "hand" with the mouse
     function msMove(evt) {
-        var evt = translateTouch(d3.event);
+        var evt = translateTouch(evt);
         if (hand != null) {
             // compute relative mouse movements since last call
             var dx = evt.clientX - startPos[0];
@@ -145,19 +140,24 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
             initLongClick(evt.clientX, evt.clientY);
 
             // check if object can be dropped
-            var dropTo = evt.target;
-            while (dropTo.nodeType == 1 && dropTo.getAttribute("class") != "operand")
-                dropTo = dropTo.parentNode;
-            if (dropTo.nodeType == 1 &&
-                (dropTo.getAttribute("blocked") != "true" || hand.parentNode == dropTo) &&
-                hand.getAttributeNS(topns, "drop") != "none") {
+            var dropTo;
+            hand.removeAttribute('opacity');
+            var current = evt.target;
+            while (current.nodeType == 1) {
+                if (current.getAttribute('class') === "operand" &&
+                    (current.getAttribute('blocked') !== "true" || current === hand.parentNode))
+                  dropTo = current;
+                if (current.getAttribute('class') === "palette")
+                  hand.setAttribute('opacity',0.5);
+                if (current === hand)
+                  dropTo = undefined;
+                current = current.parentNode;
+            }
+            if (dropTo) {
 
                 // insert grabbed object into mouse pointer target group
                 setFloating(hand, false);
                 moveToGroup(hand, dropTo, evt.clientX, evt.clientY);
-
-                // algebra.verify the winning test during mouse hover
-                algebra.verify(findRoot(hand), false);
 
                 // offset snap region
                 startPos = [evt.clientX, evt.clientY];
@@ -167,7 +167,9 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
                 // object can not be dropped let it move
                 var isTop = hand == findRoot(hand);
                 if (isTop || !isTop && dist > 30) {
+                    // make underlying objects receive mouse events.
                     sendHome(hand);
+                    hand.setAttribute('pointer-events','none');
 
                     // switch to screen coordinate system
                     var m = hand.parentNode.getScreenCTM().inverse();
@@ -199,7 +201,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
         }
 
         // default position at the cursor
-        if (target.getAttributeNS(topns, "container") == "true") {
+        if (target.getAttribute("data-container") == "true") {
             var m = obj.getScreenCTM();
             var p = target.getScreenCTM().inverse();
             m.e = x;
@@ -212,9 +214,11 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
             setTimeout(function () {
                 layout(oldContainer);
             }, 1);
-            eval(obj.getAttributeNS(topns, "layout"));
+            eval(obj.getAttribute("data-layout"));
             layout(target);
         }
+
+        algebra.verify(document.getElementById('answer'));
     }
 
     // This method is called when an object is draged on the background.
@@ -246,9 +250,6 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
         // make the object float on top
         if (obj != target.lastChild)
             target.appendChild(obj);
-
-        // make underlying objects receive mouse events. Will be reverted after mouse up.
-        obj.setAttribute("pointer-events", "none");
     }
 
     // Transform element and all containing groups to hold new content
@@ -257,7 +258,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
         var top = null;
         var ctm1 = obj.getCTM();
         do {
-            var command = obj.getAttributeNS(topns, "layout");
+            var command = obj.getAttribute("data-layout");
             if (command) {
                 top = obj;
                 eval(command);
@@ -266,7 +267,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
         } while (obj.nodeType == 1);
 
         // The the topmost element is assumed to be freely placeable on the screen
-        if (top != null) {
+        if (top && top.getAttribute('data-ismovable') === "true") {
             // make sure original element does not move on the screen
             var ctm2 = element.getCTM();
             var w = top.getCTM();
@@ -282,7 +283,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     // this function inserts parenthesis to ensure syntactic correctness
     function insertParenthesis(obj) {
         // check if object has priority attribute
-        var myPrio = obj.getAttributeNS(topns, "priority");
+        var myPrio = obj.getAttribute("data-priority");
         if (myPrio) {
             // myPrio is the operations priority
             myPrio = parseInt(myPrio);
@@ -328,7 +329,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     // get an operator's mathematical priority to determine
     // whether parenthesis are required.
     function getPriority(obj) {
-        var prio = obj.getAttributeNS(topns, "priority");
+        var prio = obj.getAttribute("data-priority");
         if (prio) {
             return parseInt(prio);
         } else {
@@ -399,8 +400,8 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     // centered in the other axis.
     function boxLayout(obj, horizontal) {
         var padding = 5;
-        if (obj.getAttributeNS(topns, "padding"))
-            padding = parseInt(obj.getAttributeNS(topns, "padding"));
+        if (obj.getAttribute("data-padding"))
+            padding = parseInt(obj.getAttribute("data-padding"));
 
         var back = null;
         var stretch = null;
@@ -412,7 +413,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
             var child = obj.childNodes[i];
             if (child.nodeType == 1) {
                 var debug = child.nodeName == "svg:use";
-                var opt = child.getAttributeNS(topns, "layoutOpt");
+                var opt = child.getAttribute("data-layoutOpt");
                 if (child.getAttribute("class") == "background") {
                     back = child;
                 } else if (back != null && child.getAttribute("display") != "none"
@@ -472,6 +473,30 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
         }
     }
 
+    function paletteLayout(obj) {
+      var x = 10;
+      for (var i = 0; i < obj.childNodes.length; ++i) {
+          var child = obj.childNodes[i];
+          if (child.nodeType == 1 && child.nodeName == "g") {
+              // find local coordinate system
+              var m = child.getTransformToElement(obj);
+              var box = child.getBBox();
+
+              m.a = m.d = 50 / (0.1+box.height);
+              m.e = x - m.a * box.x;
+              m.f = 10 - box.y * m.a;
+              setTransform(child, m);
+
+              // compute position for next element
+              x += +m.a * box.width + 10;
+            }
+        }
+        var operands = obj.querySelectorAll('.operand')
+        for (var i=0; i<operands.length; ++i) {
+          operands[i].setAttribute('blocked','true');
+        }
+    }
+
     // Set the boundaries for the background rectangular element
     function scaleRect(obj, x0, x1, y0, y1) {
         obj.setAttribute("width", x1 - x0);
@@ -516,8 +541,8 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
     // select the root element in case of long clicks
     function longClickAction(x, y) {
         if (hand != null && Math.abs(x - longClick[0]) + Math.abs(y - longClick[1]) < 5) {
-            root = findRoot(hand);
-            releaseHand();
+            var root = findRoot(hand);
+            hand.removeAttribute('pointer-events');
             hand = root;
         }
     }
@@ -541,12 +566,7 @@ define('math_puzzle_touchop', ['d3', 'math_puzzle_algebra'], function (d3, algeb
 
     return {
         deepLayout: deepLayout,
-        msDown: msDown,
-        msBlur: msBlur,
-        msUp: msUp,
-        msMove: msMove,
-        snap: snap,
-        horizontalLayout: horizontalLayout,
-        verticalLayout: verticalLayout
+        setupCanvas: setupCanvas,
+        setupElement: setupElement
     };
 });

@@ -8,12 +8,11 @@
 /*global define*/
 
  define('math_puzzle_algebra', [], function () {
-     var topns = 'http://www.dadim.de/touchop'
 
      // Exactract the formula for the user created value.
      function computeValue(obj) {
          // check for redirections
-         var use= obj.getAttributeNS(topns, "use");
+         var use= obj.getAttribute("data-use");
          if (use) {
      	obj= document.getElementById("def-"+use);
      	if (obj.getAttribute("class")!="valid")
@@ -21,7 +20,7 @@
          }
 
          // The top:value attribute contains the formula
-         var value= obj.getAttributeNS(topns, "value");
+         var value= obj.getAttribute("data-value");
 
          // recurse through child elements to find open arguments
          var args= [];
@@ -57,8 +56,11 @@
          var win= true;
 
          // break if formula is incomplete
-         if (value==null || value.indexOf("#")>=0) return;
-
+         if (value==null || value.indexOf("#")>=0) {
+           smile(0.0);
+           return;
+         }
+         
          // construct the objective function
          while (!obj.getAttribute('data-goal')) obj = obj.parentNode;
          var goal= obj.getAttribute("data-goal");
