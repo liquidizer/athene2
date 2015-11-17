@@ -17,6 +17,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     // The screen coordinates of the last drag update.
     var startPos = [0, 0];
     var hasMoved = false;
+    var justGrabbed = false;
 
     // position for long click action, after which the top group is selected
     var longClick = [0, 0];
@@ -42,7 +43,9 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
       for (var i=0; i<operands.length; ++i) {
         operands[i].removeAttribute('blocked');
       }
-  sendHome(elt);
+      elt.setAttribute('opacity',0.5);
+      justGrabbed = true;
+      sendHome(elt);
     }
 
     // Perform an initial layout of all objects on the screen.
@@ -125,6 +128,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
                 hand.parentNode.removeChild(hand);
             hand = null;
         }
+        justGrabbed = false;
     }
 
     // Move the grabbed object "hand" with the mouse
@@ -141,7 +145,6 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
 
             // check if object can be dropped
             var dropTo;
-            hand.removeAttribute('opacity');
             var current = evt.target;
             while (current.nodeType == 1) {
                 if (current.getAttribute('class') === "operand" &&
@@ -154,22 +157,25 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
                 current = current.parentNode;
             }
             if (dropTo) {
+                // offset snap region
+                if (dropTo != hand.parentNode)
+                    startPos = [evt.clientX, evt.clientY];
+                hasMoved = true;
 
                 // insert grabbed object into mouse pointer target group
                 setFloating(hand, false);
+                hand.removeAttribute('opacity');
                 moveToGroup(hand, dropTo, evt.clientX, evt.clientY);
 
-                // offset snap region
-                startPos = [evt.clientX, evt.clientY];
-                hasMoved = true;
             }
             else if (dropTo != hand.parentNode) {
                 // object can not be dropped let it move
                 var isTop = hand == findRoot(hand);
-                if (isTop || !isTop && dist > 30) {
+                if (isTop || dist > 30) {
                     // make underlying objects receive mouse events.
                     sendHome(hand);
                     hand.setAttribute('pointer-events','none');
+                    if (justGrabbed) hand.setAttribute('opacity', 0.5);
 
                     // switch to screen coordinate system
                     var m = hand.parentNode.getScreenCTM().inverse();
@@ -540,7 +546,8 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
 
     // select the root element in case of long clicks
     function longClickAction(x, y) {
-        if (hand != null && Math.abs(x - longClick[0]) + Math.abs(y - longClick[1]) < 5) {
+        if (hand != null && !justGrabbed &&
+           Math.abs(x - longClick[0]) + Math.abs(y - longClick[1]) < 5) {
             var root = findRoot(hand);
             hand.removeAttribute('pointer-events');
             hand = root;

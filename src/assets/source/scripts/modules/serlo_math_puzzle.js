@@ -32,16 +32,14 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         addOperand(svg)
           .attr('transform','translate(250,150)')
           .attr('id','answer');
-        var x=100;
         var ops = obj.replace(/.*= */,'').split(/ +/);
         var palette = addPalette(svg);
         for (var i in ops) {
             var elt = ops[i];
-            var op = palette.append('g')
-              .attr('transform','translate('+parseInt(x)+','+parseInt(20)+')')
-              .on('mousedown', detachFromPalette);
-            x += 100;
+            var op = palette.append('g').on('mousedown', detachFromPalette);
+;
             switch (elt) {
+                case "^" : addPower(op); break;
                 case "/" : addDivide(op); break;
                 case "*" : addTimes(op); break;
                 case "+" : addPlus(op); break;
@@ -113,16 +111,31 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
             return g;
         }
 
-        // Division operator
-        function addDivide(elt) {
-            var g = elt.append('g')
-                .attr('data-value',"#1 / #2")
-                .attr('data-priority',"99")
-                .attr('data-layout',"verticalLayout(obj)")
-            g[0][0].addEventListener('mousedown',touchop.msDown);
+        function addOperator(elt) {
+            var g = elt.append('g');
             g.append('rect')
                 .attr('class',"background")
                 .attr('rx',5).attr('ry',5);
+            return g;
+        }
+
+        function addPower(elt) {
+          var g = addOperator(elt)
+            .attr('data-value', 'Math.pow(#1, #2)')
+            .attr('data-priority', 91)
+            .attr('data-layout','horizontalLayout(obj)');
+          addOperand(g);
+          var exponent = g.append('g').attr('data-priority',80);
+          exponent.append('rect')
+            .attr('y',50).attr('width',1).attr('height',1);
+          addOperand(exponent.append('g').attr('transform','scale(0.6) translate(0,-50)'));
+        }
+
+        function addDivide(elt) {
+            var g = addOperator(elt)
+                .attr('data-value',"#1 / #2")
+                .attr('data-priority',"99")
+                .attr('data-layout',"verticalLayout(obj)");
             g.append('g')
                 .attr('transform',"scale(0.8)")
                 .attr('data-priority',"100");
@@ -139,14 +152,10 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
 
         // Multiplication operator
         function addTimes(elt) {
-            var g = elt.append('g')
+            var g = addOperator(elt)
                 .attr('data-value',"#1 * #2")
                 .attr('data-priority',"100")
-                .attr('data-layout',"horizontalLayout(obj)")
-            g[0][0].addEventListener('mousedown',touchop.msDown);
-            g.append('rect')
-                .attr('class','background')
-                .attr('rx',5).attr('ry',5);
+                .attr('data-layout',"horizontalLayout(obj)");
             addOperand(g);
             g.append('text').text('*');
             addOperand(g);
@@ -154,14 +163,10 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
 
         // Addition operator
         function addPlus(elt) {
-            var g = elt.append('g')
+            var g = addOperator(elt)
                 .attr('data-value',"#1 + #2")
                 .attr('data-priority',"120")
-                .attr('data-layout',"horizontalLayout(obj)")
-            g[0][0].addEventListener('mousedown',touchop.msDown);
-            g.append('rect')
-                .attr('class','background')
-                .attr('rx',5).attr('ry',5);
+                .attr('data-layout',"horizontalLayout(obj)");
             addOperand(g);
             g.append('text').text('+');
             addOperand(g);
@@ -169,14 +174,10 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
 
         // Difference operator
         function addMinus(elt) {
-            var g = elt.append('g')
+            var g = addOperator(elt)
                 .attr('data-value',"#1 - #2")
                 .attr('data-priority',"111")
-                .attr('data-layout',"horizontalLayout(obj)")
-            g[0][0].addEventListener('mousedown',touchop.msDown);
-            g.append('rect')
-                .attr('class','background')
-                .attr('rx',5).attr('ry',5);
+                .attr('data-layout',"horizontalLayout(obj)");
             addOperand(g);
             g.append('text').text('-');
             addOperand(g);
