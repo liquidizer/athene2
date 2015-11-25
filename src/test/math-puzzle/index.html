@@ -7,19 +7,21 @@
   <link rel="stylesheet" href="style.css"></head>
   <script>
   require(["math_puzzle_init"], function(touchop) {
-    var update = function() {
-      touchop.makePuzzle(document.getElementById("puzzle-here"), document.getElementById("code").value);
+    var puzzles = document.querySelectorAll(".math-puzzle");
+    for (var i=0; i<puzzles.length; ++i) {
+        touchop.makePuzzle(puzzles[i],
+            puzzles[i].getAttribute("data-source"));
     }
-    document.getElementById("code").addEventListener("change", update);
-    update();
   })
   </script>
 </head>
-<body>
-  <div>
-    <input id="code" value="2 = 1 + 1 ^"/>
-  </div>
-  <div id="puzzle-here"  style="width:500">
-  </div>
+<body style="width:500">
+    <div class="math-puzzle" data-source="2 = 1 +">
+        <div class="excercise">Some Text</div>
+    </div>
+    <div class="math-puzzle" data-source="4 = 1 2 ^">
+    </div>
+    <div class="math-puzzle" data-source="12 = 1 2 3 + *">
+    </div>
 </body>
 </html>

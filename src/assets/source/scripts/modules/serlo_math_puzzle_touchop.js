@@ -27,7 +27,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
         svgElement.addEventListener('mousemove', msMove);
         svgElement.addEventListener('touchmove', msMove);
         svgElement.addEventListener('mouseup', msUp);
-        svgElement.addEventListener('touchend', msMove);
+        svgElement.addEventListener('touchend', msUp);
         svgElement.addEventListener('mousedown', msBlur);
         svgElement.addEventListener('touchstart', msBlur);
         deepLayout(svgElement, true);
@@ -37,7 +37,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     // after an element is moved out of the palette
     function setupElement(elt) {
       elt.addEventListener('mousedown', msDown);
-      elt.addEventListener('touchdown', msDown);
+      elt.addEventListener('touchstart', msDown);
       elt.setAttribute('data-ismovable','true');
       var operands = elt.querySelectorAll('.operand')
       for (var i=0; i<operands.length; ++i) {
@@ -72,7 +72,6 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     }
 
     // Translate events that come from touch devices
-    var touchOnly = false; // FF mobile bug
     function translateTouch(evt) {
         if (evt.touches != undefined) {
             var evt2 = {};
@@ -83,7 +82,6 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
             evt.preventDefault();
             return evt2;
         }
-        if (touchOnly) throw "nope";
         // not a touch device
         return evt;
     }
@@ -93,8 +91,6 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
         var evt = translateTouch(evt);
         if (hand == null && evt.target != null) {
             // find signaling object
-            touchOnly = evt.isTouch;
-
             var grabbed = evt.target;
             while (grabbed.getAttribute("data-ismovable") !== "true") {
                 grabbed = grabbed.parentNode;
@@ -133,15 +129,19 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
 
     // Move the grabbed object "hand" with the mouse
     function msMove(evt) {
-        var evt = translateTouch(evt);
         if (hand != null) {
             // compute relative mouse movements since last call
+            var evt = translateTouch(evt);
             var dx = evt.clientX - startPos[0];
             var dy = evt.clientY - startPos[1];
             var dist = Math.abs(dx) + Math.abs(dy);
 
             // long click action
             initLongClick(evt.clientX, evt.clientY);
+            if (isNaN(startPos[0])) {
+                startPos=[evt.clientX, evt.clientY];
+                return;
+            }
 
             // check if object can be dropped
             var dropTo;
@@ -576,6 +576,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     return {
         deepLayout: deepLayout,
         setupCanvas: setupCanvas,
-        setupElement: setupElement
+        setupElement: setupElement,
+        msDown: msDown
     };
 });

@@ -3,7 +3,7 @@
 define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     var makePuzzle = function (parent, obj) {
-        d3.select(parent).select("svg").remove();
+        d3.select(parent).classed('closed', true);
         var svg = d3.select(parent)
             .append("svg")
             .attr('width','100%')
@@ -11,8 +11,8 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
 
         // Emoticon
         var emog = svg.append('g')
-            .attr('transform',"translate(500,20)")
-            .attr('xlink:href',"index.html");
+            .style('cursor','pointer')
+            .attr('transform',"translate(500,15)");
         emog.append('g')
             .attr('class',"notwin")
             .append('image')
@@ -24,6 +24,33 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
             .append('image')
             .attr('xlink:href',"http://files.liquidizer.org/touchop/common/smiley.svg")
             .attr('width',81).attr('height',81);
+        var toggle = function(istouch) {
+            open = d3.select(parent).classed('closed');
+            d3.selectAll('.math-puzzle').classed('closed',true);
+            if (istouch || !open) {
+                if (open) {
+                    var width = window.innerWidth - 20;
+                    var height = window.innerHeight -20;
+                    d3.select(parent)
+                        .style('position','fixed')
+                        .style('top', 10+Math.max(0,(height-2/3*width)/2))
+                        .style('left', 10+Math.max(0,(width-3/2*height)/2))
+                        .transition()
+                        .style('outline-width',Math.max(height,width)/2+'px')
+                        .style('width',Math.min(width, 3/2*height))
+                        .style('height',Math.min(height, 2/3*width))
+                } else {
+                    d3.select(parent)
+                        .style('outline-width','1px')
+                        .style('position','static')
+                        .style('width','')
+                        .style('height', '')
+                }
+            }
+            d3.select(parent).classed('closed', !open);
+        };
+        emog.on('click', function() { toggle(false); });
+        emog.on('touchend', function() { toggle(true); });
 
         // insert the operators
         addOperand(svg)
@@ -33,8 +60,10 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         var palette = addPalette(svg);
         for (var i in ops) {
             var elt = ops[i];
-            var op = palette.append('g').on('mousedown', detachFromPalette);
-;
+            var op = palette.append('g')
+                .on('mousedown', detachFromPalette)
+                .on('touchstart', detachFromPalette);
+
             switch (elt) {
                 case "^" : addPower(op); break;
                 case "/" : addDivide(op); break;
@@ -53,9 +82,8 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
             var elt = d3.event.currentTarget;
             var copy = elt.firstChild.cloneNode(true);
             elt.appendChild(copy);
-            touchop.setupElement(copy)
-            copy.dispatchEvent(new MouseEvent('mousedown',
-              {clientX : d3.event.clientX, clientY : d3.event.clientY}));
+            touchop.setupElement(elt.firstChild);
+            touchop.msDown(d3.event);
         }
 
         // A palette for holding items

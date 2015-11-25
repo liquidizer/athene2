@@ -1,3 +1,17 @@
+.math-puzzle {
+    margin: 5px;
+    overflow: hidden;
+    background-color: white;
+    outline: rgba(0,0,0,0.8) solid 1px;
+}
+.math-puzzle.closed {
+    height: 90px;
+    transition height 1s;
+}
+.excercise {
+    position : absolute;
+    margin: 10px;
+}
 text {
     font-size: 48px;
 }
