@@ -7,22 +7,19 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         var svg = d3.select(parent)
             .append("svg")
             .attr('width','100%')
-            .attr('height','100%')
             .attr('viewBox','0 0 600 400');
-
-        svg.attr('data-goal', obj.split(/=/)[0]);
 
         // Emoticon
         var emog = svg.append('g')
             .attr('transform',"translate(500,20)")
             .attr('xlink:href',"index.html");
         emog.append('g')
-            .attr('id',"top:notwin")
+            .attr('class',"notwin")
             .append('image')
             .attr('xlink:href',"http://files.liquidizer.org/touchop/common/frowny.svg")
             .attr('width',81).attr('height',81);
         emog.append('g')
-            .attr('id',"top:win")
+            .attr('class',"win")
             .attr('opacity',0.0)
             .append('image')
             .attr('xlink:href',"http://files.liquidizer.org/touchop/common/smiley.svg")
@@ -31,7 +28,7 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         // insert the operators
         addOperand(svg)
           .attr('transform','translate(250,150)')
-          .attr('id','answer');
+          .attr('data-goal', obj.split(/=/)[0]);
         var ops = obj.replace(/.*= */,'').split(/ +/);
         var palette = addPalette(svg);
         for (var i in ops) {

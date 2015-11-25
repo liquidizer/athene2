@@ -224,7 +224,9 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
             layout(target);
         }
 
-        algebra.verify(document.getElementById('answer'));
+        var svg = obj;
+        while (svg.nodeName != 'svg') svg = svg.parentNode;
+        algebra.verify(svg);
     }
 
     // This method is called when an object is draged on the background.

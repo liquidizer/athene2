@@ -50,20 +50,20 @@
      }
 
      // verify whether the new object satisfies the winning test
-     function verify(obj, isFinal) {
+     function verify(svg, isFinal) {
          // extract the user created formula in json
-         var value= computeValue(obj);
-         var win= true;
+         var obj = svg.querySelector("[data-goal]");
+         var value = computeValue(obj);
 
          // break if formula is incomplete
-         if (value==null || value.indexOf("#")>=0) {
-           smile(0.0);
+         if (!value || value.indexOf("#")>=0) {
+           smile(svg, 0.0);
            return;
          }
 
          // construct the objective function
-         while (!obj.getAttribute('data-goal')) obj = obj.parentNode;
          var goal = obj.getAttribute("data-goal");
+         var win = true;
          if (goal) {
              var goal= "("+value+") - ("+goal+")";
 
@@ -89,20 +89,16 @@
              win= eval(value)===true;
          }
          if (win) {
-            smile(1.0);
+            smile(svg, 1.0);
          } else {
-             smile(0.0);
+             smile(svg, 0.0);
          }
      }
 
      // sets the oppacitiy to show either of the two similies
-     function smile(value) {
-         document.getElementById("top:win").setAttribute("opacity", value);
-         document.getElementById("top:notwin").setAttribute("opacity", 1.0 - value);
-         if (value == 1.0) {
-             // store the success persitently
-             window.localStorage.setItem(window.location.pathname, "PASSED");
-         }
+     function smile(svg, value) {
+         svg.querySelector(".win").setAttribute("opacity", value);
+         svg.querySelector(".notwin").setAttribute("opacity", 1.0 - value);
      }
 
     return {

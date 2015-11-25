@@ -4,7 +4,7 @@ text {
 .atom {
     text-anchor: middle;
 }
-#answer .background, .palette .background {
+[data-goal] .background, .palette .background {
     fill: deepskyblue;
     stroke-width: 1;
 }
