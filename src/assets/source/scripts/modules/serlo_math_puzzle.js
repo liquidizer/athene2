@@ -2,8 +2,9 @@
 
 define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
+    var open = null;
+
     var makePuzzle = function (parent, obj) {
-        d3.select(parent).classed('closed', true);
         var svg = d3.select(parent)
             .append("svg")
             .attr('width','100%')
@@ -24,33 +25,46 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
             .append('image')
             .attr('xlink:href',"http://files.liquidizer.org/touchop/common/smiley.svg")
             .attr('width',81).attr('height',81);
-        var toggle = function(istouch) {
-            open = d3.select(parent).classed('closed');
-            d3.selectAll('.math-puzzle').classed('closed',true);
-            if (istouch || !open) {
-                if (open) {
-                    var width = window.innerWidth - 20;
-                    var height = window.innerHeight -20;
-                    d3.select(parent)
-                        .style('position','fixed')
-                        .style('top', 10+Math.max(0,(height-2/3*width)/2))
-                        .style('left', 10+Math.max(0,(width-3/2*height)/2))
-                        .transition()
-                        .style('outline-width',Math.max(height,width)/2+'px')
-                        .style('width',Math.min(width, 3/2*height))
-                        .style('height',Math.min(height, 2/3*width))
-                } else {
-                    d3.select(parent)
-                        .style('outline-width','1px')
-                        .style('position','static')
-                        .style('width','')
-                        .style('height', '')
-                }
+
+        // open/close logic
+        var touch = false;
+        d3.select(parent).style('height', '90px');
+        var toggle = function() {
+            open = (open === parent) ? null : parent;
+            window.dispatchEvent(new Event('resize'));
+        }
+        window.addEventListener('resize', function() {
+            if (open === parent && touch) {
+                var width = Math.min(window.innerWidth-20, 3/2*(window.innerHeight-20));
+                var height = Math.min(window.innerHeight-20, 2/3*(window.innerWidth-20));
+                d3.select(parent)
+                    .style('position','fixed')
+                    .style('outline-width',Math.max(window.innerHeight-height,window.innerWidth-width)+'px')
+                    .style('top', (window.innerHeight-height)/2)
+                    .style('left', (window.innerWidth-width)/2)
+                    .transition()
+                    .style('width',width)
+                    .style('height',height)
+            } else if (open === parent && !touch) {
+                d3.select(parent)
+                    .transition()
+                    .style('height',svg[0][0].offsetHeight);
+            } else {
+                touch = false;
+                d3.select(parent)
+                    .transition()
+                    .style('outline-width','1px')
+                    .style('position','static')
+                    .style('width','auto')
+                    .style('height', '90px')
             }
-            d3.select(parent).classed('closed', !open);
-        };
-        emog.on('click', function() { toggle(false); });
-        emog.on('touchend', function() { toggle(true); });
+        });
+        emog.on('click', function() { toggle(); });
+        d3.select(parent).on('touchstart', function() {
+            touch=true;
+            if (open && d3.event.target===svg[0][0])
+                d3.event.preventDefault(); // prevent unintional scrolling
+        });
 
         // arrow
         svg.append('path')
