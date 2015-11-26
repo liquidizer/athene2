@@ -52,6 +52,11 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         emog.on('click', function() { toggle(false); });
         emog.on('touchend', function() { toggle(true); });
 
+        // arrow
+        svg.append('path')
+            .attr('d','m 321,278 c -6,0 -10,2 -12,5 -8,1 -10,5 -11,8 l -29,-10 -3,0 c 3,5 0,9 -5,9 1,0 2,1 4,2 l 26,9 c -1,2 0,2 0,4 18,6 35,21 45,12 l 13,4 c 0,0 7,-22 8,-25 -3,-1 -8,-3 -8,-3 0,-4 -4,-7 -8,-11 -6,-4 -11,-4 -15,-4 z m -58,2 c -4,0 -7,4 -4,8 7,1 8,-4 4,-8 z m 13,-60 -62,46 34,0 c -5,24 -48,50 -97,55 l 117,0 c 5,-6 10,-13 13,-20 l 0,0 -23,-10 c -7,-3 -2,-16 8,-13 l 22,7 c 2,-6 3,-10 4,-17 l 32,0 z')
+            .style('fill','lightgray');
+
         // insert the operators
         addOperand(svg)
           .attr('transform','translate(250,150)')
