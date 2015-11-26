@@ -110,6 +110,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
 
     // Mouse clicked on the background
     function msBlur(evt) {
+        if (!evt.touches) evt.preventDefault();
         if (document.activeElement && document.activeElement.blur)
             document.activeElement.blur();
         return false;
