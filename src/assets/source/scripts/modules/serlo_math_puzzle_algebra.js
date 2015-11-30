@@ -57,7 +57,7 @@
 
          // break if formula is incomplete
          if (!value || value.indexOf("#")>=0) {
-           smile(svg, 0.0);
+           smile(svg, false);
            return;
          }
 
@@ -88,17 +88,16 @@
          } else {
              win= eval(value)===true;
          }
-         if (win) {
-            smile(svg, 1.0);
-         } else {
-             smile(svg, 0.0);
-         }
+         smile(svg, win);
      }
 
      // sets the oppacitiy to show either of the two similies
-     function smile(svg, value) {
-         svg.querySelector(".win").setAttribute("opacity", value);
-         svg.querySelector(".notwin").setAttribute("opacity", 1.0 - value);
+     function smile(svg, win) {
+         var oldstyle = svg.parentNode.getAttribute('class');
+         var newstyle = oldstyle.replace(/ solved/,'');
+         if (win)
+            newstyle = newstyle + ' solved';
+         svg.parentNode.setAttribute('class', newstyle)
      }
 
     return {
