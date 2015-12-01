@@ -63,32 +63,34 @@
 
          // construct the objective function
          var goal = obj.getAttribute("data-goal");
-         var win = true;
-         if (goal) {
-             var goal= "("+value+") - ("+goal+")";
+         goal= "("+value+") - ("+goal+")";
 
-             // check for free variables
-             var vars= goal.match(/[a-zA-Z]+([^a-zA-Z.(]|$)/g) || [];
+         // check for free variables
+         var vars= goal.match(/[a-z]+([^a-z.(]|$)/g) || [];
 
-             try {
-             	var tries= 1 + 10*vars.length;
-             	for (var i=0; win && i<tries; ++i) {
-             	    var eps= goal;
-             	    for (var j=0; j<vars.length; ++j) {
-                    var name = vars[j].replace(/.$/,'');
-             		     var no= "("+(Math.random()*6-3)+")";
-             		      eps= eps.replace(new RegExp(name,"g"), no);
-             	    }
-             	    // compare with the objective value
-             	    win= win && Math.abs(eval(eps))<1e-10;
-             	}
-             } catch(e) {
-         	    win= false;
-             }
-         } else {
-             win= eval(value)===true;
+         try {
+         	var tries= 1 + 10*vars.length,
+                nans = 0;
+         	for (var i=0; i<tries; ++i) {
+         	    var eps= goal;
+         	    for (var j=0; j<vars.length; ++j) {
+                var name = vars[j].replace(/.$/,'');
+         		     var no= "("+(Math.random()*6-3)+")";
+         		      eps= eps.replace(new RegExp(name+"([^a-z.(]|$)","g"), no+"$1");
+         	    }
+         	    // compare with the objective value
+                var eeps = eval(eps);
+                if (isNaN(eeps))
+                    nans += 1;
+                if (Math.abs(eeps) > 1e-10) {
+                    smile(svg, false);
+                    return;
+                }
+         	}
+            smile(svg, nans < 0.8*tries);
+         } catch(e) {
+            smile(svg, false);
          }
-         smile(svg, win);
      }
 
      // sets the oppacitiy to show either of the two similies

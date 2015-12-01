@@ -120,8 +120,11 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     function msUp(evt) {
         if (hand != null) {
             hand.removeAttribute("pointer-events");
-            if (hand.getAttribute('opacity'))
-                hand.parentNode.removeChild(hand);
+            if (hand.getAttribute('opacity')) {
+                var parent = hand.parentNode;
+                parent.removeChild(hand);
+                layout(parent);
+            }
             hand = null;
         }
         justGrabbed = false;
@@ -134,7 +137,8 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
             var evt = translateTouch(evt);
             var dx = evt.clientX - startPos[0];
             var dy = evt.clientY - startPos[1];
-            var dist = Math.abs(dx) + Math.abs(dy);
+            var dist = Math.max(Math.abs(dx / hand.getScreenCTM().a),
+                                Math.abs(dy / hand.getScreenCTM().d));
 
             // long click action
             initLongClick(evt.clientX, evt.clientY);
@@ -170,8 +174,9 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
             }
             else if (dropTo != hand.parentNode) {
                 // object can not be dropped let it move
-                var isTop = hand == findRoot(hand);
-                if (isTop || dist > 30) {
+                var isTop = hand.parentNode.nodeName === "svg",
+                    thresh = justGrabbed ? 100 : 30;
+                if (isTop || dist > thresh) {
                     // make underlying objects receive mouse events.
                     sendHome(hand);
                     hand.setAttribute('pointer-events','none');
@@ -274,7 +279,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
             obj = obj.parentNode;
         } while (obj.nodeType == 1);
 
-        // The the topmost element is assumed to be freely placeable on the screen
+        // If the topmost element is freely placeable, realign it
         if (top && top.getAttribute('data-ismovable') === "true") {
             // make sure original element does not move on the screen
             var ctm2 = element.getCTM();

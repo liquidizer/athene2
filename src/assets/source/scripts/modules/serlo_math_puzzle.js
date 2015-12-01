@@ -5,6 +5,7 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
     var open = null,
         touch = false;
 
+    // prevent unintended scrolling
     window.addEventListener('touchmove', function(evt) {
         if (open && touch) evt.preventDefault();
     });
@@ -34,11 +35,11 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
                 var width = Math.min(window.innerWidth-20, 3/2*(window.innerHeight-20));
                 var height = Math.min(window.innerHeight-20, 2/3*(window.innerWidth-20));
                 d3.select(parent)
-                    .style('position','fixed')
+                    .style('position','absolute')
                     .style('z-index', 20)
                     .style('outline-width',Math.max(window.innerHeight-height,window.innerWidth-width)+'px')
-                    .style('top', (window.innerHeight-height)/2)
-                    .style('left', (window.innerWidth-width)/2)
+                    .style('top', window.scrollY + (window.innerHeight-height)/2)
+                    .style('left', window.scrollX + (window.innerWidth-width)/2)
                     .transition()
                     .style('width',width)
                     .style('height',height)
@@ -82,6 +83,7 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
                 case "*" : addTimes(op); break;
                 case "+" : addPlus(op); break;
                 case "-" : addMinus(op); break;
+                case "pi" : addAtom(op, "Math.PI", '\u03C0'); break;
                 default :
                   if (elt.match(/[a-zA-Z0-9.]+/)) addAtom(op, elt);
                   break;
@@ -127,11 +129,11 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         }
 
         // Atomic element with text
-        function addAtom(elt, value) {
+        function addAtom(elt, value, text) {
             var g = elt.append('g')
                 .attr("data-value",value)
                 .attr('data-ismovable', 'true');
-            addLiteral(g,value);
+            addLiteral(g,text || value);
             g[0][0].addEventListener('mousedown',touchop.msDown);
         }
 
