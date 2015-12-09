@@ -22,11 +22,17 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
             .attr('width','100%')
             .attr('viewBox','0 0 600 400');
 
+        // make IE11 scale correcly, might not work on mobile
+        if ("ActiveXObject" in window)
+            svg.attr('height', svg.node().getBoundingClientRect().width*2/3)
+
         // open/close logic
         d3.select(parent).style('height', '90px');
         var toggle = function() {
             open = (open === parent) ? null : parent;
-            window.dispatchEvent(new Event('resize'));
+            var evt = document.createEvent("CustomEvent");
+            evt.initCustomEvent('resize', false, false, {});
+            window.dispatchEvent(evt);
             if (!open) touch=false;
         }
         window.addEventListener('resize', function() {
