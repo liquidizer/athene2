@@ -51,6 +51,10 @@ text {
     stroke: black !IMPORTANT;
 }
 
+[data-ismovable=true] {
+    cursor: pointer;
+}
+
 .shadow {
     fill: black;
     opacity: 0.4;

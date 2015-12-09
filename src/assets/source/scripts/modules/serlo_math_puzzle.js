@@ -93,11 +93,8 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
 
         // detach an element from the palette
         function detachFromPalette() {
-            var elt = d3.event.currentTarget;
-            var copy = elt.firstChild.cloneNode(true);
-            elt.appendChild(copy);
-            touchop.setupElement(elt.firstChild);
-            touchop.msDown(d3.event);
+            var elt = d3.event.currentTarget.firstChild;
+            touchop.duplicateElement(elt, d3.event);
         }
 
         // A palette for holding items
@@ -151,7 +148,8 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
         }
 
         function addOperator(elt) {
-            var g = elt.append('g');
+            var g = elt.append('g')
+                .attr('data-ismovable','true');
             g.append('rect')
                 .attr('class',"background")
                 .attr('rx',5).attr('ry',5);
@@ -196,7 +194,7 @@ define('math_puzzle_init', ['jquery', 'd3', 'math_puzzle_touchop'], function ($,
                 .attr('data-priority',"100")
                 .attr('data-layout',"horizontalLayout(obj)");
             addOperand(g);
-            g.append('text').text('*');
+            g.append('text').text('\u2022');
             addOperand(g);
         }
 

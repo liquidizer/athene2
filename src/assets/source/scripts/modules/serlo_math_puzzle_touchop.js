@@ -24,28 +24,35 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
 
     // setup event listeners for the svg canvas
     function setupCanvas(svgElement) {
-        svgElement.addEventListener('mousemove', msMove);
-        svgElement.addEventListener('touchmove', msMove);
-        svgElement.addEventListener('mouseup', msUp);
-        svgElement.addEventListener('touchend', msUp);
+        svgElement.parentNode.addEventListener('mousemove', msMove);
+        svgElement.parentNode.addEventListener('touchmove', msMove);
+        svgElement.parentNode.addEventListener('mouseup', msUp);
+        svgElement.parentNode.addEventListener('touchend', msUp);
         svgElement.addEventListener('mousedown', msBlur);
         svgElement.addEventListener('touchstart', msBlur);
         deepLayout(svgElement, true);
     }
 
     // setup event listeners for an element. This function is called
-    // after an element is moved out of the palette
-    function setupElement(elt) {
+    // when an element is moved out of the palette
+    function duplicateElement(elt, grabEvent) {
+      var copy = elt.cloneNode(true);
+      elt.parentNode.appendChild(copy);
+
       elt.addEventListener('mousedown', msDown);
       elt.addEventListener('touchstart', msDown);
-      elt.setAttribute('data-ismovable','true');
       var operands = elt.querySelectorAll('.operand')
       for (var i=0; i<operands.length; ++i) {
         operands[i].removeAttribute('blocked');
       }
-      elt.setAttribute('opacity',0.5);
-      justGrabbed = true;
-      sendHome(elt);
+      if (grabEvent) {
+          elt.setAttribute('opacity',0.5);
+          justGrabbed = true;
+          sendHome(elt);
+          if (navigator.vibrate)
+              navigator.vibrate(10);
+          msDown(grabEvent);
+      }
     }
 
     // Perform an initial layout of all objects on the screen.
@@ -579,9 +586,7 @@ define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
     }
 
     return {
-        deepLayout: deepLayout,
         setupCanvas: setupCanvas,
-        setupElement: setupElement,
-        msDown: msDown
+        duplicateElement: duplicateElement,
     };
 });
