@@ -8,7 +8,7 @@
   */
 /*global define*/
 
-define('math_puzzle_algebra', [], function () {
+define([], function () {
 
     // Exactract the formula for the user created value.
     function computeValue(obj) {

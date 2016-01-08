@@ -1,15 +1,19 @@
 <html>
 <head>
-  <script src="require.js"></script>
-  <script src="../../assets/source/scripts/modules/serlo_math_puzzle.js"></script>
-  <script src="../../assets/source/scripts/modules/serlo_math_puzzle_touchop.js"></script>
-  <script src="../../assets/source/scripts/modules/serlo_math_puzzle_algebra.js"></script>
+  <script src="../../assets/source/bower_components/requirejs/require.js"></script>
   <link rel="stylesheet" href="style.css"></head>
   <script>
-  require(["math_puzzle_init"], function(touchop) {
+  requirejs.config({
+      baseUrl : '../../assets/source/scripts/modules',
+      paths: {
+          'jquery' : '../../bower_components/jquery/jquery',
+          'd3' : '../../bower_components/d3/d3',
+      }
+  })
+  require(["serlo_math_puzzle"], function(math_puzzle) {
     var puzzles = document.querySelectorAll(".math-puzzle");
     for (var i=0; i<puzzles.length; ++i) {
-        touchop.makePuzzle(puzzles[i],
+        math_puzzle.makePuzzle(puzzles[i],
             puzzles[i].getAttribute("data-source"));
     }
   })

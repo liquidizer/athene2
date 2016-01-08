@@ -8,7 +8,7 @@
  * @link        https://github.com/serlo-org/athene2 for the canonical source repository
  */
 
-define('math_puzzle_touchop', ['math_puzzle_algebra'], function (algebra) {
+define(['serlo_math_puzzle_algebra'], function (algebra) {
     "use strict";
 
     // DnD frame work

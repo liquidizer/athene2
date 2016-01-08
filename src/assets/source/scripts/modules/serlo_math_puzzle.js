@@ -1,23 +1,25 @@
 // jshint ignore: start
 /*global define*/
-define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
+define(['jquery', 'd3', 'serlo_math_puzzle_touchop'], function ($, d3, touchop) {
 
     var open = null,
         touch = false;
 
     // prevent unintended scrolling
-    window.addEventListener('touchmove', function(evt) {
+    window.addEventListener('touchmove', function (evt) {
         if (open && touch) evt.preventDefault();
     });
 
     var makePuzzle = function (parent, obj) {
+        var emg, svg, toggle;
+
         // status image
-        var emog = d3.select(parent)
+        emog = d3.select(parent)
             .append('div')
             .attr('class', 'status');
 
         // svg canvas
-        var svg = d3.select(parent)
+        svg = d3.select(parent)
             .append("svg")
             .attr('width','100%')
             .attr('viewBox','0 0 600 400');
@@ -28,7 +30,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
         // open/close logic
         d3.select(parent).style('height', '90px');
-        var toggle = function() {
+        toggle = function() {
             open = (open === parent) ? null : parent;
             var evt = document.createEvent("CustomEvent");
             evt.initCustomEvent('resize', false, false, {});
