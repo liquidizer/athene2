@@ -1,6 +1,6 @@
 // jshint ignore: start
 /*global define*/
-define(['jquery', 'd3', 'serlo_math_puzzle_touchop'], function ($, d3, touchop) {
+define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     var open = null,
         touch = false;

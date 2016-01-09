@@ -4,13 +4,16 @@
   <link rel="stylesheet" href="style.css"></head>
   <script>
   requirejs.config({
-      baseUrl : '../../assets/source/scripts/modules',
+      baseUrl : '../../assets/source/',
       paths: {
-          'jquery' : '../../bower_components/jquery/jquery',
-          'd3' : '../../bower_components/d3/d3',
+          'math_puzzle' : 'scripts/modules/serlo_math_puzzle',
+          'math_puzzle_touchop' : 'scripts/modules/serlo_math_puzzle_touchop',
+          'math_puzzle_algebra' : 'scripts/modules/serlo_math_puzzle_algebra',
+          'jquery' : 'bower_components/jquery/jquery',
+          'd3' : 'bower_components/d3/d3',
       }
   })
-  require(["serlo_math_puzzle"], function(math_puzzle) {
+  require(["math_puzzle"], function(math_puzzle) {
     var puzzles = document.querySelectorAll(".math-puzzle");
     for (var i=0; i<puzzles.length; ++i) {
         math_puzzle.makePuzzle(puzzles[i],
