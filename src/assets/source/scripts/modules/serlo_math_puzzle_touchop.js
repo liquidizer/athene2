@@ -1,4 +1,3 @@
-// jshint ignore: start
 /**
  *
  * Interactive Mathematical Puzzles
@@ -7,21 +6,21 @@
  * @license   http://www.apache.org/licenses/LICENSE-2.0  Apache License 2.0
  * @link        https://github.com/serlo-org/athene2 for the canonical source repository
  */
-
+/* global define */
 define(['math_puzzle_algebra'], function (algebra) {
     "use strict";
 
     // DnD frame work
     // hand is a reference to the object currently beeing dragged.
-    var hand = null;
+    var hand = null,
 
     // The screen coordinates of the last drag update.
-    var startPos = [0, 0];
-    var hasMoved = false;
-    var justGrabbed = false;
+        startPos = [0, 0],
+        hasMoved = false,
+        justGrabbed = false,
 
     // position for long click action, after which the top group is selected
-    var longClick = [0, 0];
+        longClick = [0, 0];
 
     // setup event listeners for the svg canvas
     function setupCanvas(svgElement) {
@@ -37,42 +36,43 @@ define(['math_puzzle_algebra'], function (algebra) {
     // setup event listeners for an element. This function is called
     // when an element is moved out of the palette
     function duplicateElement(elt, grabEvent) {
-      var copy = elt.cloneNode(true);
-      elt.parentNode.appendChild(copy);
+        var operands, i,
+            copy = elt.cloneNode(true);
+        elt.parentNode.appendChild(copy);
 
-      elt.addEventListener('mousedown', msDown);
-      elt.addEventListener('touchstart', msDown);
-      var operands = elt.querySelectorAll('.operand')
-      for (var i=0; i<operands.length; ++i) {
-        operands[i].removeAttribute('blocked');
-      }
-      if (grabEvent) {
-          elt.setAttribute('opacity',0.5);
-          justGrabbed = true;
-          sendHome(elt);
-          if (navigator.vibrate)
-              navigator.vibrate(10);
-          msDown(grabEvent);
-      }
+        elt.addEventListener('mousedown', msDown);
+        elt.addEventListener('touchstart', msDown);
+        operands = elt.querySelectorAll('.operand');
+        for (i = 0; i < operands.length; ++i) {
+            operands[i].removeAttribute('blocked');
+        }
+        if (grabEvent) {
+            elt.setAttribute('opacity', 0.5);
+            justGrabbed = true;
+            sendHome(elt);
+            if (navigator.vibrate)
+                navigator.vibrate(10);
+            msDown(grabEvent);
+        }
     }
 
     // Perform an initial layout of all objects on the screen.
     function deepLayout(obj, doFloat) {
-        if (obj.nodeType == 1 && obj.getAttribute("display") != "none") {
+        var isObj, i, m, box;
+        if (obj.nodeType === 1 && obj.getAttribute("display") !== "none") {
             // layout children
-            var isObj = obj.getAttribute("data-ismovable");
-            for (var i = 0; i < obj.childNodes.length; ++i) {
-                deepLayout(obj.childNodes[i], isObj=="" && doFloat);
+            isObj = obj.getAttribute("data-ismovable");
+            for (i = 0; i < obj.childNodes.length; ++i) {
+                deepLayout(obj.childNodes[i], isObj === "" && doFloat);
             }
             // call layout function if available
-            var command = obj.getAttribute("data-layout");
-            command && eval(command);
+            innerLayout(obj);
 
             // set Floating
             setFloating(obj, doFloat);
             if (doFloat && isObj) {
-                var box = obj.getBBox();
-                var m = obj.getTransformToElement(obj.parentNode);
+                box = obj.getBBox();
+                m = obj.getTransformToElement(obj.parentNode);
                 m = m.translate(-box.x, -box.y);
                 setTransform(obj, m);
             }
@@ -81,7 +81,7 @@ define(['math_puzzle_algebra'], function (algebra) {
 
     // Translate events that come from touch devices
     function translateTouch(evt) {
-        if (evt.touches != undefined) {
+        if (evt.touches) {
             var evt2 = {};
             evt2.clientX = evt.touches[0].clientX;
             evt2.clientY = evt.touches[0].clientY;
@@ -95,11 +95,12 @@ define(['math_puzzle_algebra'], function (algebra) {
     }
 
     // msDown is called whenever the mouse button is pressed anywhere on the root document.
-    function msDown(evt) {
-        var evt = translateTouch(evt);
-        if (hand == null && evt.target != null) {
+    function msDown(evt0) {
+        var evt = translateTouch(evt0),
+            grabbed = evt.target;
+
+        if (!hand && evt.target) {
             // find signaling object
-            var grabbed = evt.target;
             while (grabbed.getAttribute("data-ismovable") !== "true") {
                 grabbed = grabbed.parentNode;
             }
@@ -125,8 +126,8 @@ define(['math_puzzle_algebra'], function (algebra) {
     }
 
     // This function is called when the mouse button is released.
-    function msUp(evt) {
-        if (hand != null) {
+    function msUp() {
+        if (hand) {
             hand.removeAttribute("pointer-events");
             if (hand.getAttribute('opacity')) {
                 var parent = hand.parentNode;
@@ -139,38 +140,38 @@ define(['math_puzzle_algebra'], function (algebra) {
     }
 
     // Move the grabbed object "hand" with the mouse
-    function msMove(evt) {
-        if (hand != null) {
+    function msMove(evt0) {
+        if (hand) {
             // compute relative mouse movements since last call
-            var evt = translateTouch(evt);
-            var dx = evt.clientX - startPos[0];
-            var dy = evt.clientY - startPos[1];
-            var dist = Math.max(Math.abs(dx / hand.getScreenCTM().a),
+            var dropTo, current, isTop, thresh, m,
+                evt = translateTouch(evt0),
+                dx = evt.clientX - startPos[0],
+                dy = evt.clientY - startPos[1],
+                dist = Math.max(Math.abs(dx / hand.getScreenCTM().a),
                                 Math.abs(dy / hand.getScreenCTM().d));
 
             // long click action
             initLongClick(evt.clientX, evt.clientY);
             if (isNaN(startPos[0])) {
-                startPos=[evt.clientX, evt.clientY];
+                startPos = [evt.clientX, evt.clientY];
                 return;
             }
 
             // check if object can be dropped
-            var dropTo;
-            var current = evt.target;
-            while (current.nodeType == 1) {
+            current = evt.target;
+            while (current.nodeType === 1) {
                 if (current.getAttribute('class') === "operand" &&
                     (current.getAttribute('blocked') !== "true" || current === hand.parentNode))
-                  dropTo = current;
+                    dropTo = current;
                 if (current.getAttribute('class') === "palette")
-                  hand.setAttribute('opacity',0.5);
+                    hand.setAttribute('opacity', 0.5);
                 if (current === hand)
-                  dropTo = undefined;
+                    dropTo = undefined;
                 current = current.parentNode;
             }
             if (dropTo) {
                 // offset snap region
-                if (dropTo != hand.parentNode)
+                if (dropTo !== hand.parentNode)
                     startPos = [evt.clientX, evt.clientY];
                 hasMoved = true;
 
@@ -180,18 +181,18 @@ define(['math_puzzle_algebra'], function (algebra) {
                 moveToGroup(hand, dropTo, evt.clientX, evt.clientY);
 
             }
-            else if (dropTo != hand.parentNode) {
+            else if (dropTo !== hand.parentNode) {
                 // object can not be dropped let it move
-                var isTop = hand.parentNode.nodeName === "svg",
-                    thresh = justGrabbed ? 100 : 30;
+                isTop = hand.parentNode.nodeName === "svg";
+                thresh = justGrabbed ? 100 : 30;
                 if (isTop || dist > thresh) {
                     // make underlying objects receive mouse events.
                     sendHome(hand);
-                    hand.setAttribute('pointer-events','none');
+                    hand.setAttribute('pointer-events', 'none');
                     if (justGrabbed) hand.setAttribute('opacity', 0.5);
 
                     // switch to screen coordinate system
-                    var m = hand.parentNode.getScreenCTM().inverse();
+                    m = hand.parentNode.getScreenCTM().inverse();
                     // translate by screen coordinates
                     m = m.translate(dx, dy);
                     // transform bock to local coordinate system
@@ -210,7 +211,8 @@ define(['math_puzzle_algebra'], function (algebra) {
     // The object obj is inserted into a new group element target. Layouts are updated
     function moveToGroup(obj, target, x, y) {
         // move object from its current to the target container
-        var oldContainer = obj.parentNode;
+        var m, p, svg,
+            oldContainer = obj.parentNode;
         try {
             target.appendChild(obj);
         } catch (e) {
@@ -220,25 +222,26 @@ define(['math_puzzle_algebra'], function (algebra) {
         }
 
         // default position at the cursor
-        if (target.getAttribute("data-container") == "true") {
-            var m = obj.getScreenCTM();
-            var p = target.getScreenCTM().inverse();
+        if (target.getAttribute("data-container") === "true") {
+            m = obj.getScreenCTM();
+            p = target.getScreenCTM().inverse();
             m.e = x;
             m.f = y;
             setTransform(obj, p.multiply(m));
         }
 
         // layout old and new container
-        if (oldContainer != target) {
+        if (oldContainer !== target) {
             setTimeout(function () {
                 layout(oldContainer);
             }, 1);
-            eval(obj.getAttribute("data-layout"));
+            innerLayout(obj);
             layout(target);
         }
 
-        var svg = obj;
-        while (svg.nodeName != 'svg') svg = svg.parentNode;
+        svg = obj;
+        while (svg.nodeName !== 'svg')
+            svg = svg.parentNode;
         algebra.verify(svg);
     }
 
@@ -246,19 +249,20 @@ define(['math_puzzle_algebra'], function (algebra) {
     // The draged object is inserted into its home group and the transformation is adjusted
     function sendHome(obj) {
         // move this object to the root element
-        var target = obj;
-        while (target.nodeName != 'svg') target = target.parentNode;
-        if (obj.parentNode != target) {
+        var m, m1, m2,
+            target = obj;
+        while (target.nodeName !== 'svg') target = target.parentNode;
+        if (obj.parentNode !== target) {
 
             // store the current location
-            var m1 = target.getScreenCTM().inverse();
-            var m2 = obj.getScreenCTM();
+            m1 = target.getScreenCTM().inverse();
+            m2 = obj.getScreenCTM();
 
             // the object is inserted into its home group
             moveToGroup(obj, target);
 
             // compute relative transformation matrix
-            var m = obj.getScreenCTM();
+            m = obj.getScreenCTM();
             m.e = m2.e;
             m.f = m2.f;
             m = m1.multiply(m);
@@ -269,30 +273,30 @@ define(['math_puzzle_algebra'], function (algebra) {
             setFloating(obj, true);
         }
         // make the object float on top
-        if (obj != target.lastChild)
+        if (obj !== target.lastChild)
             target.appendChild(obj);
     }
 
     // Transform element and all containing groups to hold new content
     function layout(element) {
-        var obj = element;
-        var top = null;
-        var ctm1 = obj.getCTM();
+        var ctm2, w, m,
+            obj = element,
+            top = null,
+            ctm1 = obj.getCTM();
         do {
-            var command = obj.getAttribute("data-layout");
-            if (command) {
+            innerLayout(obj);
+            if (obj.getAttribute("data-layout")) {
                 top = obj;
-                eval(command);
             }
             obj = obj.parentNode;
-        } while (obj.nodeType == 1);
+        } while (obj.nodeType === 1);
 
         // If the topmost element is freely placeable, realign it
         if (top && top.getAttribute('data-ismovable') === "true") {
             // make sure original element does not move on the screen
-            var ctm2 = element.getCTM();
-            var w = top.getCTM();
-            var m = top.getTransformToElement(top.parentNode);
+            ctm2 = element.getCTM();
+            w = top.getCTM();
+            m = top.getTransformToElement(top.parentNode);
             m = m.multiply(w.inverse());
             m = m.translate(ctm1.e - ctm2.e, ctm1.f - ctm2.f);
             m = m.multiply(w);
@@ -301,41 +305,60 @@ define(['math_puzzle_algebra'], function (algebra) {
         }
     }
 
+    // call the referenced layout function in the data-layout attribute
+    function innerLayout(element) {
+        switch (element.getAttribute("data-layout")) {
+        case "paletteLayout" :
+            paletteLayout(element);
+            break;
+        case "horizontalLayout" :
+            horizontalLayout(element);
+            break;
+        case "verticalLayout" :
+            verticalLayout(element);
+            break;
+        case "snap" :
+            snap(element);
+            break;
+        }
+    }
+
     // this function inserts parenthesis to ensure syntactic correctness
     function insertParenthesis(obj) {
         // check if object has priority attribute
-        var myPrio = obj.getAttribute("data-priority");
+        var child, next, subPrio, lpar, rpar, cbox, parbox, scale,
+            myPrio = obj.getAttribute("data-priority");
         if (myPrio) {
             // myPrio is the operations priority
-            myPrio = parseInt(myPrio);
-            if ((myPrio & 1) == 1)
+            myPrio = parseInt(myPrio, 10);
+            if ((myPrio & 1) === 1)
                 myPrio = myPrio - 1;
-            var child = obj.firstChild;
+            child = obj.firstChild;
             // check each child if parenthesis are needed
-            while (child != null) {
-                var next = child.nextSibling;
-                if (child.nodeType == 1) {
+            while (child) {
+                next = child.nextSibling;
+                if (child.nodeType === 1) {
                     // prevailing parenthesis are removed
-                    if (child.getAttribute("name") == "parenthesis") {
+                    if (child.getAttribute("name") === "parenthesis") {
                         obj.removeChild(child);
                     } else {
                         // check if child's priority requires placing parethesis
-                        var subPrio = getPriority(child)
+                        subPrio = getPriority(child);
                         if (myPrio < subPrio) {
                             // create new parenthesis objects
-                            var lpar = document.createElementNS(obj.namespaceURI, "text");
+                            lpar = document.createElementNS(obj.namespaceURI, "text");
                             lpar.appendChild(document.createTextNode("("));
                             lpar.setAttribute("name", "parenthesis");
                             obj.insertBefore(lpar, child);
-                            var rpar = document.createElementNS(obj.namespaceURI, "text");
+                            rpar = document.createElementNS(obj.namespaceURI, "text");
                             rpar.appendChild(document.createTextNode(")"));
                             rpar.setAttribute("name", "parenthesis");
                             obj.insertBefore(rpar, child.nextSibling);
 
                             // scale the parenthesis to full height
-                            var cbox = child.getBBox();
-                            var parbox = lpar.getBBox();
-                            var scale = cbox.height / parbox.height;
+                            cbox = child.getBBox();
+                            parbox = lpar.getBBox();
+                            scale = cbox.height / parbox.height;
                             lpar.setAttribute("transform", "scale(1," + scale + ")");
                             rpar.setAttribute("transform", "scale(1," + scale + ")");
                         }
@@ -350,15 +373,16 @@ define(['math_puzzle_algebra'], function (algebra) {
     // get an operator's mathematical priority to determine
     // whether parenthesis are required.
     function getPriority(obj) {
-        var prio = obj.getAttribute("data-priority");
+        var i, child,
+            prio = obj.getAttribute("data-priority");
         if (prio) {
-            return parseInt(prio);
+            return parseInt(prio, 10);
         } else {
-            for (var i = 0; i < obj.childNodes.length; ++i) {
-                var child = obj.childNodes[i];
-                if (child.nodeType == 1) {
-                    var prio = getPriority(child);
-                    if (prio != 0)
+            for (i = 0; i < obj.childNodes.length; ++i) {
+                child = obj.childNodes[i];
+                if (child.nodeType === 1) {
+                    prio = getPriority(child);
+                    if (prio !== 0)
                         return prio;
                 }
             }
@@ -369,20 +393,21 @@ define(['math_puzzle_algebra'], function (algebra) {
     // Layouts the content centered to its first child element
     // Creates a snap-in like effect what dropping operands
     function snap(obj) {
-        var back = null;
-        var blocked = false;
-        for (var i = 0; i < obj.childNodes.length; ++i) {
-            var child = obj.childNodes[i];
-            if (child.nodeType == 1) {
-                if (child.getAttribute("class") == "background") {
+        var child, m, box1, box2, i,
+            back = null,
+            blocked = false;
+        for (i = 0; i < obj.childNodes.length; ++i) {
+            child = obj.childNodes[i];
+            if (child.nodeType === 1) {
+                if (child.getAttribute("class") === "background") {
                     // The first element is the reference position
                     back = child;
                     back.removeAttribute("opacity");
                 }
-                else if (back != null) {
-                    var m = child.getTransformToElement(obj);
-                    var box1 = back.getBBox();
-                    var box2 = child.getBBox();
+                else if (back) {
+                    m = child.getTransformToElement(obj);
+                    box1 = back.getBBox();
+                    box2 = child.getBBox();
 
                     m.e = box1.x - box2.x - 0.5 * box2.width + 0.5 * box1.width;
                     m.f = box1.y - box2.y - 0.5 * box2.height + 0.5 * box1.height;
@@ -402,7 +427,7 @@ define(['math_puzzle_algebra'], function (algebra) {
             obj.removeAttribute("blocked");
         }
         // vibrate
-        if (hand != null && navigator.vibrate)
+        if (hand && navigator.vibrate)
             navigator.vibrate(10);
     }
 
@@ -420,30 +445,29 @@ define(['math_puzzle_algebra'], function (algebra) {
     // Layouts all child objects sequentially in one axis,
     // centered in the other axis.
     function boxLayout(obj, horizontal) {
-        var padding = 5;
+        var padding = 5,
+            back = null,
+            stretch = null,
+            x = 0,
+            x0 = 0,
+            y = 0,
+            h = 0,
+            child, opt, m, box, i;
         if (obj.getAttribute("data-padding"))
-            padding = parseInt(obj.getAttribute("data-padding"));
+            padding = parseInt(obj.getAttribute("data-padding"), 10);
 
-        var back = null;
-        var stretch = null;
-        var x = 0;
-        var x0 = 0;
-        var y = 0;
-        var h = 0;
-        for (var i = 0; i < obj.childNodes.length; ++i) {
-            var child = obj.childNodes[i];
-            if (child.nodeType == 1) {
-                var debug = child.nodeName == "svg:use";
-                var opt = child.getAttribute("data-layoutOpt");
-                if (child.getAttribute("class") == "background") {
+        for (i = 0; i < obj.childNodes.length; ++i) {
+            child = obj.childNodes[i];
+            if (child.nodeType === 1) {
+                opt = child.getAttribute("data-layoutOpt");
+                if (child.getAttribute("class") === "background") {
                     back = child;
-                } else if (back != null && child.getAttribute("display") != "none"
-                    && child.transform) {
+                } else if (back && child.getAttribute("display") !== "none" && child.transform) {
                     // find local coordinate system
-                    var m = child.getTransformToElement(obj);
-                    var box = child.getBBox();
+                    m = child.getTransformToElement(obj);
+                    box = child.getBBox();
 
-                    if (opt == "stretch") {
+                    if (opt === "stretch") {
                         // determine the objects size later
                         m.a = 1.0;
                         m.d = 1.0;
@@ -453,11 +477,11 @@ define(['math_puzzle_algebra'], function (algebra) {
                     // align object
                     if (horizontal) {
                         m.e = x - m.a * box.x;
-                        m.f = y - m.d * (box.y + 0.5 * box.height)
-                            - m.b * (box.x + 0.5 * box.width);
+                        m.f = y - m.d * (box.y + 0.5 * box.height) -
+                            m.b * (box.x + 0.5 * box.width);
                     } else {
-                        m.e = y - m.a * (box.x + 0.5 * box.width)
-                            - m.c * (box.y + 0.5 * box.height);
+                        m.e = y - m.a * (box.x + 0.5 * box.width) -
+                            m.c * (box.y + 0.5 * box.height);
                         m.f = x - m.d * box.y - Math.min(m.d, 0) * box.height;
                     }
                     setTransform(child, m);
@@ -475,10 +499,10 @@ define(['math_puzzle_algebra'], function (algebra) {
         }
 
         // strech object to span from left to right
-        if (stretch != null) {
+        if (stretch) {
             h = h + 10;
-            var box = stretch.getBBox();
-            var m = stretch.getTransformToElement(obj);
+            box = stretch.getBBox();
+            m = stretch.getTransformToElement(obj);
             m.a = h / box.width;
             m.e = m.e + (1 - m.a) * (box.x + box.width / 2);
             setTransform(stretch, m);
@@ -486,7 +510,7 @@ define(['math_puzzle_algebra'], function (algebra) {
 
         // scale the background to cover the object's area
         h = h + 2 * padding;
-        if (back != null) {
+        if (back) {
             if (horizontal)
                 scaleRect(back, x0 - padding, x, y - h / 2, y + h / 2);
             else
@@ -495,26 +519,27 @@ define(['math_puzzle_algebra'], function (algebra) {
     }
 
     function paletteLayout(obj) {
-      var x = 10;
-      for (var i = 0; i < obj.childNodes.length; ++i) {
-          var child = obj.childNodes[i];
-          if (child.nodeType == 1 && child.nodeName == "g") {
-              // find local coordinate system
-              var m = child.getTransformToElement(obj);
-              var box = child.getBBox();
+        var child, m, box, operands, i,
+            x = 10;
+        for (i = 0; i < obj.childNodes.length; ++i) {
+            child = obj.childNodes[i];
+            if (child.nodeType === 1 && child.nodeName === "g") {
+                // find local coordinate system
+                m = child.getTransformToElement(obj);
+                box = child.getBBox();
 
-              m.a = m.d = 50 / (0.1+box.height);
-              m.e = x - m.a * box.x;
-              m.f = 10 - box.y * m.a;
-              setTransform(child, m);
+                m.a = m.d = 50 / (0.1 + box.height);
+                m.e = x - m.a * box.x;
+                m.f = 10 - box.y * m.a;
+                setTransform(child, m);
 
-              // compute position for next element
-              x += +m.a * box.width + 10;
+                // compute position for next element
+                x += +m.a * box.width + 10;
             }
         }
-        var operands = obj.querySelectorAll('.operand')
-        for (var i=0; i<operands.length; ++i) {
-          operands[i].setAttribute('blocked','true');
+        operands = obj.querySelectorAll('.operand');
+        for (i = 0; i < operands.length; ++i) {
+            operands[i].setAttribute('blocked', 'true');
         }
     }
 
@@ -528,22 +553,23 @@ define(['math_puzzle_algebra'], function (algebra) {
 
     // Makes or removes a shadow below movable objects
     function setFloating(obj, doFloat) {
-        var canMove = obj.getAttribute("data-ismovable") === "true";
+        var oldShadow, shadow, back,
+            canMove = obj.getAttribute("data-ismovable") === "true";
         if (canMove) {
             // the shadow is always the first child
-            var oldShadow = obj.childNodes[0];
-            if (oldShadow.nodeType == 1 && oldShadow.getAttribute("class") == "shadow") {
+            oldShadow = obj.childNodes[0];
+            if (oldShadow.nodeType === 1 && oldShadow.getAttribute("class") === "shadow") {
                 obj.removeChild(oldShadow);
             }
             // find the objects background element
-            var back = obj.childNodes[0];
-            while (back != null && (
-            back.nodeType != 1 || back.getAttribute("class") != "background")) {
+            back = obj.childNodes[0];
+            while (back && (back.nodeType !== 1 ||
+                back.getAttribute("class") !== "background")) {
                 back = back.nextSibling;
             }
             // create the shadow element by cloning the background
-            if (doFloat && back != null) {
-                var shadow = back.cloneNode(false);
+            if (doFloat && back) {
+                shadow = back.cloneNode(false);
                 obj.insertBefore(shadow, obj.childNodes[0]);
                 shadow.setAttribute("class", "shadow");
                 shadow.setAttribute("transform", "translate(3,5)");
@@ -555,13 +581,13 @@ define(['math_puzzle_algebra'], function (algebra) {
     function initLongClick(x, y) {
         longClick = [x, y];
         setTimeout(function () {
-            longClickAction(x, y)
+            longClickAction(x, y);
         }, 500);
     }
 
     // select the root element in case of long clicks
     function longClickAction(x, y) {
-        if (hand != null && !justGrabbed &&
+        if (hand && !justGrabbed &&
            Math.abs(x - longClick[0]) + Math.abs(y - longClick[1]) < 5) {
             var root = findRoot(hand);
             hand.removeAttribute('pointer-events');
@@ -572,7 +598,7 @@ define(['math_puzzle_algebra'], function (algebra) {
     // find the largest moveable group in which obj is contained
     function findRoot(obj) {
         var root = obj;
-        while (obj != null && obj.nodeType == 1) {
+        while (obj && obj.nodeType === 1) {
             if (obj.getAttribute("data-ismovable") === "true")
                 root = obj;
             obj = obj.parentNode;
