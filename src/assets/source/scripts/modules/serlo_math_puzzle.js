@@ -114,8 +114,10 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                 addAtom(op, "Math.PI", '\u03C0');
                 break;
             default :
-                if (ops[i].match(/[a-zA-Z0-9.]+/))
+                if (ops[i].match(/[0-9.]+/))
                     addAtom(op, ops[i]);
+                if (ops[i].match(/^\$.*/))
+                    addAtom(op, ops[i], ops[i].substring(1));
                 break;
             }
         }

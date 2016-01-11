@@ -74,7 +74,8 @@ define([], function () {
     function isEquivalent(value, goal) {
          // check for free variables
         var tries, context, value1, value2, i, j,
-            vars = goal.match(/[a-zA-Z][a-z0-9.]*/g) || [];
+            pi = Math.PI,
+            vars = (goal+value).match(/\$[a-zA-Z][a-z0-9.]*/g) || [];
 
         try {
             tries = 1 + 10 * vars.length;
@@ -84,10 +85,8 @@ define([], function () {
                     if (!vars[j].match(/\./))
                         context[vars[j]] = Math.random() * 6 - 3;
                 }
-                with (context) {
-                    value1 = eval(value);
-                    value2 = eval(goal);
-                }
+                value1 = eval(value.replace(/\$/g,'context.'));
+                value2 = eval(goal.replace(/\$/g,'context.'));
                 if (isNaN(value1) !== isNaN(value2))
                     return false;
                 if (!isNaN(value1) && Math.abs(value1 - value2) > 1e-10)
