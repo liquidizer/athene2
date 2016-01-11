@@ -115,7 +115,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                     grabbed = grabbed.parentNode;
                 }
                 hand = grabbed;
-                svgElement.classList.add("grabbed")
+                svgElement.classList.add("grabbed");
 
                 // store mouse position. Will be updated when mouse moves.
                 startPos = [evt.clientX, evt.clientY];
@@ -146,7 +146,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                     layout(parent);
                 }
                 hand = null;
-                svgElement.classList.remove("grabbed")
+                svgElement.classList.remove("grabbed");
             }
             justGrabbed = false;
         }
