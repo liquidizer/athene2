@@ -90,10 +90,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         ops = obj.replace(/.*= */, '').split(/ +/);
         palette = addPalette(svg);
         for (i in ops) {
-            op = palette.append('g')
-                .on('mousedown', detachFromPalette)
-                .on('touchstart', detachFromPalette);
-
+            op = palette.append('g').attr('class', 'cloneme');
             switch (ops[i]) {
             case "^" :
                 addPower(op);
@@ -122,12 +119,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             }
         }
         touchop.setupCanvas(svg[0][0]);
-
-        // detach an element from the palette
-        function detachFromPalette() {
-            var elt = d3.event.currentTarget.firstChild;
-            touchop.duplicateElement(elt, d3.event);
-        }
 
         // A palette for holding items
         function addPalette(elt) {
