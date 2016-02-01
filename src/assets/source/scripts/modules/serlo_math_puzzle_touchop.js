@@ -82,7 +82,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                 setFloating(obj, doFloat);
                 if (doFloat && isObj) {
                     box = obj.getBBox();
-                    m = obj.getTransformToElement(obj.parentNode);
+                    m = getTransformToElement(obj, obj.parentNode);
                     m = m.translate(-box.x, -box.y);
                     setTransform(obj, m);
                 }
@@ -304,7 +304,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                 // make sure original element does not move on the screen
                 ctm2 = element.getCTM();
                 w = top.getCTM();
-                m = top.getTransformToElement(top.parentNode);
+                m = getTransformToElement(top, top.parentNode);
                 m = m.multiply(w.inverse());
                 m = m.translate(ctm1.e - ctm2.e, ctm1.f - ctm2.f);
                 m = m.multiply(w);
@@ -413,7 +413,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                         back.removeAttribute("opacity");
                     }
                     else if (back) {
-                        m = child.getTransformToElement(obj);
+                        m = getTransformToElement(child, obj);
                         box1 = back.getBBox();
                         box2 = child.getBBox();
 
@@ -472,7 +472,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                         back = child;
                     } else if (back && child.getAttribute("display") !== "none" && child.transform) {
                         // find local coordinate system
-                        m = child.getTransformToElement(obj);
+                        m = getTransformToElement(child, obj);
                         box = child.getBBox();
 
                         if (opt === "stretch") {
@@ -510,7 +510,7 @@ define(['math_puzzle_algebra'], function (algebra) {
             if (stretch) {
                 h = h + 10;
                 box = stretch.getBBox();
-                m = stretch.getTransformToElement(obj);
+                m = getTransformToElement(stretch, obj);
                 m.a = h / box.width;
                 m.e = m.e + (1 - m.a) * (box.x + box.width / 2);
                 setTransform(stretch, m);
@@ -533,7 +533,7 @@ define(['math_puzzle_algebra'], function (algebra) {
                 child = obj.childNodes[i];
                 if (child.nodeType === 1 && child.nodeName === "g") {
                     // find local coordinate system
-                    m = child.getTransformToElement(obj);
+                    m = getTransformToElement(child, obj);
                     box = child.getBBox();
 
                     m.a = m.d = 50 / (0.1 + box.height);
@@ -619,6 +619,11 @@ define(['math_puzzle_algebra'], function (algebra) {
     function setTransform(obj, m) {
         // For some very strange reasons conversion to string is 2x faster.
         obj.setAttribute("transform", "matrix(" + m.a + "," + m.b + "," + m.c + "," + m.d + "," + m.e + "," + m.f + ")");
+    }
+
+    // Replacement for the deprecated function
+    function getTransformToElement(obj, target) {
+        return target.getScreenCTM().inverse().multiply(obj.getScreenCTM());
     }
 
     return {
