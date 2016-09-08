@@ -9,16 +9,15 @@
 /*global define*/
 define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
-    var open = null,
-        touch = false;
-
     // prevent unintended scrolling
+    var touch = false;
     window.addEventListener('touchmove', function (evt) {
         if (open && touch) evt.preventDefault();
     });
 
     function makePuzzle(parent, obj) {
-        var emog, svg, toggle, ops, op, i, palette;
+        var emog, svg, redraw, toggle, ops, op, i, palette, 
+		open = true, fullscreen=false;
 
         // status image
         emog = d3.select(parent)
@@ -36,18 +35,20 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             svg.attr('height', svg.node().getBoundingClientRect().width * 2 / 3);
 
         // open/close logic
-        d3.select(parent).style('height', '90px');
-        toggle = function () {
-            open = (open === parent) ? null : parent;
+	toggle = function() {
+	    open = !open;
+	    redraw();
+        }
+        redraw = function () {
             var evt = document.createEvent("CustomEvent");
             evt.initCustomEvent('resize', false, false, {});
             window.dispatchEvent(evt);
             if (!open)
-                touch = false;
+                fullscreen = false;
         };
         window.addEventListener('resize', function () {
-            d3.select(parent).classed('open', open === parent);
-            if (open === parent && touch) {
+            d3.select(parent).classed('open', open);
+            if (open && fullscreen) {
                 var serlo_top = d3.select('#page .main')[0][0].offsetTop,
                     serlo_left = d3.select('#page .main')[0][0].offsetLeft,
                     width = Math.min(window.innerWidth - 20, 3 / 2 * (window.innerHeight - 20)),
@@ -61,7 +62,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     .transition()
                     .style('width', width + 'px')
                     .style('height', height + 'px');
-            } else if (open === parent && !touch) {
+            } else if (open && !fullscreen) {
                 d3.select(parent)
                     .transition()
                     .style('height', parent.offsetWidth * 2 / 3 + 'px');
@@ -76,7 +77,8 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             }
         });
         emog.on('click', function () { toggle(); });
-        emog.on('touchstart', function () { touch = true; });
+        emog.on('touchstart', function () { touch = true; fullscreen=true; });
+	redraw();
 
         // arrow
         svg.append('path')
