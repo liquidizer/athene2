@@ -1,5 +1,5 @@
 .math-puzzle {
-    margin: 5px;
+    margin: 5px 0;
     overflow: hidden;
     background-color: white;
     outline: rgba(0,0,0,0.8) solid 1px;
@@ -10,7 +10,7 @@
     overflow : hidden;
 }
 .status {
-    height : 80px;
+    /*height : 80px;
     width : 130px;
     float: right;
     margin: 5px 5px -85px 0;
@@ -19,7 +19,19 @@
     background-position: right 0px;
     cursor: pointer;
     position: relative;
+    z-index: 10;*/
+    height : 20px;
+    width: 20px;
+    float:right;
+    margin: 5px 5px -85px 0;
+    background-color: black;
+    cursor: pointer;
+    background-size: 130px 320px;
+    background-position: right 0px;
+    cursor: pointer;
+    position: relative;
     z-index: 10;
+    display: none;
 }
 .open .status {
     background-position: right -80px;
@@ -38,7 +50,8 @@ text {
     text-anchor: middle;
 }
 [data-goal] .background, .palette .background {
-    fill: deepskyblue;
+    /*fill: deepskyblue; Philipp*/
+    fill:#428bca;
     stroke-width: 1;
 }
 .background {
@@ -53,9 +66,12 @@ text {
 
 .grabbed [data-goal].operand > .background,
 .grabbed [data-goal] .operand > .background {
-    fill: yellowgreen;
+    /*fill: yellowgreen;
     stroke-width: 2;
-    stroke : darkgreen;
+    stroke : darkgreen;*/
+    fill: #d9edf7;
+    stroke-width: 4;
+    stroke : black;
 }
 
 [data-ismovable=true] {
@@ -109,4 +125,19 @@ text.axes {
     stroke-width:2;
     opacity: 0.5;
     pointer-events:none;
+}
+
+/*Philipp code*/
+.palette rect{
+    fill: #d9edf7;
+}
+
+.solved [data-goal] .background {
+    fill:#95bc1a;
+}
+
+@media (max-width: 768px){
+    .status {
+        display: inline;
+    }
 }
