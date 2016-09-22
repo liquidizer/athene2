@@ -10,11 +10,10 @@
 /*global define*/
 
 define([], function () {
-
+    var currentValue=0;
     // Exactract the formula for the user created value.
     function computeValue(obj) {
         var use, value, args, i, sub;
-
         // check for redirections
         use = obj.getAttribute("data-use");
         if (use) {
@@ -59,11 +58,15 @@ define([], function () {
         var goal,
             obj = svg.querySelector("[data-goal]"),
             value = computeValue(obj);
+            console.log(eval(value));
 
         if (!value || value.indexOf("#") >= 0) {
             // break if formula is incomplete
             smile(svg, false);
         } else {
+            if (value.indexOf("$") <0) {
+                currentValue=value;
+            }
             // construct the objective function
             goal = obj.getAttribute("data-goal");
             smile(svg, isEquivalent(value, goal));
@@ -106,7 +109,12 @@ define([], function () {
         svg.parentNode.setAttribute('class', newstyle);
     }
 
+    function getLastValue(){
+        return eval(currentValue)
+    }
+
     return {
-        verify: verify
+        verify: verify,
+        getLastValue: getLastValue
     };
 });

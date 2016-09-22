@@ -48,6 +48,7 @@ define(['math_puzzle_algebra'], function (algebra) {
             var operands, i,
                 elt = grabEvent.currentTarget.firstChild,
                 copy = elt.cloneNode(true);
+                //copy.setAttribute('style','display:none');
             elt.parentNode.appendChild(copy);
 
             elt.addEventListener('mousedown', msDown);
