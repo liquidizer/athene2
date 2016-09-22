@@ -32,11 +32,9 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             .attr('viewBox', '0 0 600 400')
             //.attr('style','display:none');
 
-        val = svg
+        val = d3.select(parent)
             .append("div")
-        val.on('updateValue', function(){
-            console.log(touchop.algebra.getLastValue())
-        })
+            .attr('class','end-result')
 
         // make IE11 scale correcly, might not work on mobile
         if ("ActiveXObject" in window)
@@ -86,15 +84,9 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         });
         //emog.on('click', function () { toggle(); });
         //emog.on('touchstart', function () { touch = true; fullscreen=true; });
-        //emog.on('click', function () { touch = true; fullscreen=!fullscreen;redraw(); });
+        emog.on('click', function () { touch = true; fullscreen=!fullscreen;redraw(); });
         emog.on('touchstart', function () { touch = true; fullscreen=true; redraw(); });
 
-        emog.on('click', function () { 
-            console.log("init event")
-            var ev = document.createEvent("CustomEvent");
-                ev.initCustomEvent('updateValue', false, false, {});
-                val.dispatchEvent(ev);
-        });
         redraw();
 
         // arrow
@@ -132,10 +124,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             case "pi" :
                 addAtom(op, "Math.PI", '\u03C0');
                 break;
-            /*case "p": phi
-                addAtom(initialOp,999);
-                initialOp.select('g')[0][0].addEventListener('mousedown', touchop.msDown);
-                break;*/
             default :
                 if (ops[i].match(/[0-9.]+/))
                     addAtom(op, ops[i]);

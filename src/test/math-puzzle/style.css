@@ -141,3 +141,13 @@ text.axes {
         display: inline;
     }
 }
+
+.end-result {
+    height: 30px;
+    width: 30px;
+    background-color: blue;
+    display: block;
+    position: absolute;
+    right: 10px;
+    margin-top: -150px;
+}
