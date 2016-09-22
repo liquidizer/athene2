@@ -58,7 +58,6 @@ define([], function () {
         var goal,
             obj = svg.querySelector("[data-goal]"),
             value = computeValue(obj);
-            console.log(eval(value));
 
         if (!value || value.indexOf("#") >= 0) {
             // break if formula is incomplete
