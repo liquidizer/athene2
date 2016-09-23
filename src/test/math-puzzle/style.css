@@ -12,12 +12,16 @@
 .status {
     height : 20px;
     width: 20px;
+    margin-bottom: -20px;
     float:right;
     background-color: black;
     cursor: pointer;
     position: relative;
     z-index: 10;
     display: none;
+}
+.fullscreen .status {
+    display: inline;
 }
 @media (max-width: 768px){
     .status {

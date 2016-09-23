@@ -47,6 +47,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     width = Math.min(windowWidth - 20, 3 / 2 * (window.innerHeight - 20)),
                     height = Math.min(window.innerHeight - 20, 2 / 3 * (windowWidth - 20));
                 d3.select(parent)
+                    .classed('fullscreen', true)
                     .style('position', 'absolute')
                     .style('z-index', 20)
                     .style('outline-width', Math.max(window.innerHeight - height, window.innerWidth - width) + 'px')
@@ -56,6 +57,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     .style('height', height + 'px');
             } else {
                 d3.select(parent)
+                    .classed('fullscreen', false)
                     .style('z-index', 0)
                     .style('outline-width', '1px')
                     .style('position', 'static')
