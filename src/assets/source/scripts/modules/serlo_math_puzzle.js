@@ -10,84 +10,67 @@
 define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     // prevent unintended scrolling
-    var touch = false;
+    var fullscreen = undefined;
     window.addEventListener('touchmove', function (evt) {
-        if (open && touch) evt.preventDefault();
+        if (fullscreen) evt.preventDefault();
     });
 
     function makePuzzle(parent, obj) {
-        var emog, svg, redraw, toggle, ops, op, i, palette, 
-		open = true, fullscreen=false;
+        var emog, svg, redraw, toggle, ops, op, i, palette;
         var showResult=false;
 
         // status image
         emog = d3.select(parent)
             .append('div')
-            .attr('class', 'status')
-            //.attr('style', 'display:none');
+            .attr('class', 'status');
 
         // svg canvas
         svg = d3.select(parent)
             .append("svg")
             .attr('width', '100%')
-            .attr('viewBox', '0 0 600 400')
-            //.attr('style','display:none');
+            .attr('viewBox', '0 0 600 400');
 
         res = d3.select(parent)
             .append("div")
             .attr('class','end-result')
 
-        // make IE11 scale correcly, might not work on mobile
-        if ("ActiveXObject" in window)
-            svg.attr('height', svg.node().getBoundingClientRect().width * 2 / 3);
-
-        // open/close logic
-	    toggle = function() {
-            open = !open;
+        // fullscreen logic
+	    toggleFullscreen = function() {
+            fullscreen = (fullscreen) ? undefined : parent;
             redraw();
         }
+
         redraw = function () {
             var evt = document.createEvent("CustomEvent");
             evt.initCustomEvent('resize', false, false, {});
             window.dispatchEvent(evt);
-            if (!open)
-                fullscreen = false;
         };
         window.addEventListener('resize', function () {
-            d3.select(parent).classed('open', open);
-            if (open && fullscreen) {
+            if (fullscreen == parent) {
                 var serlo_top = d3.select('#page .main')[0][0].offsetTop,
                     serlo_left = d3.select('#page .main')[0][0].offsetLeft,
-                    width = Math.min(window.innerWidth - 20, 3 / 2 * (window.innerHeight - 20)),
-                    height = Math.min(window.innerHeight - 20, 2 / 3 * (window.innerWidth - 20));
+                    windowWidth = d3.select('body').node().offsetWidth,
+                    width = Math.min(windowWidth - 20, 3 / 2 * (window.innerHeight - 20)),
+                    height = Math.min(window.innerHeight - 20, 2 / 3 * (windowWidth - 20));
                 d3.select(parent)
                     .style('position', 'absolute')
                     .style('z-index', 20)
                     .style('outline-width', Math.max(window.innerHeight - height, window.innerWidth - width) + 'px')
                     .style('top', window.scrollY - serlo_top + (window.innerHeight - height) / 2 + 'px')
                     .style('left', window.scrollX - serlo_left + (window.innerWidth - width) / 2 + 'px')
-                    .transition()
                     .style('width', width + 'px')
                     .style('height', height + 'px');
-            } else if (open && !fullscreen) {
-                d3.select(parent)
-                    .transition()
-                    .style('height', parent.offsetWidth * 2 / 3 + 'px');
             } else {
                 d3.select(parent)
-                    .transition()
                     .style('z-index', 0)
                     .style('outline-width', '1px')
-                    .style('position', 'static')
-                    .style('width', 'auto')
-                    .style('height', '90px');
+                    .style('position', 'relative')
+                    .style('width', '')
+                    .style('height', '');
             }
         });
-        //emog.on('click', function () { toggle(); });
-        //emog.on('touchstart', function () { touch = true; fullscreen=true; });
-        emog.on('click', function () { touch = true; fullscreen=!fullscreen;redraw(); });
-        emog.on('touchstart', function () { touch = true; fullscreen=true; redraw(); });
 
+        emog.on('click', function () { toggleFullscreen(); });
         redraw();
 
         // arrow
@@ -96,7 +79,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             .style('fill', 'lightgray');
 
         // insert the operators
-        // Änderungen phi
         //var initialOp;
         //initialOp=addOperand(svg)
         addOperand(svg)
@@ -286,3 +268,4 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     return { makePuzzle : makePuzzle };
 });
+

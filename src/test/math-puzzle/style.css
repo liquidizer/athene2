@@ -11,37 +11,19 @@
     overflow : hidden;
 }
 .status {
-    /*height : 80px;
-    width : 130px;
-    float: right;
-    margin: 5px 5px -85px 0;
-    background-image: url('puzzle-status.png');
-    background-size: 130px 320px;
-    background-position: right 0px;
-    cursor: pointer;
-    position: relative;
-    z-index: 10;*/
     height : 20px;
     width: 20px;
     float:right;
-    margin: 5px 5px -85px 0;
     background-color: black;
-    cursor: pointer;
-    background-size: 130px 320px;
-    background-position: right 0px;
     cursor: pointer;
     position: relative;
     z-index: 10;
     display: none;
 }
-.open .status {
-    background-position: right -80px;
-}
-.open.solved .status {
-    background-position: right -160px;
-}
-.solved .status {
-    background-position: right -240px;
+@media (max-width: 768px){
+    .status {
+        display: inline;
+    }
 }
 
 text {
@@ -67,9 +49,6 @@ text {
 
 .grabbed [data-goal].operand > .background,
 .grabbed [data-goal] .operand > .background {
-    /*fill: yellowgreen;
-    stroke-width: 2;
-    stroke : darkgreen;*/
     fill: #d9edf7;
     stroke-width: 4;
     stroke : black;
@@ -128,19 +107,12 @@ text.axes {
     pointer-events:none;
 }
 
-/*Philipp code*/
-.palette rect{
+.palette rect {
     fill: #d9edf7;
 }
 
 .solved [data-goal] .background {
     fill:#95bc1a;
-}
-
-@media (max-width: 768px){
-    .status {
-        display: inline;
-    }
 }
 
 .end-result {
@@ -154,3 +126,4 @@ text.axes {
     line-height: 30px;
     font-size: 1.3em;
 }
+
