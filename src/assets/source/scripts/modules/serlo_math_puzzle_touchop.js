@@ -627,7 +627,12 @@ define(['math_puzzle_algebra'], function (algebra) {
         return target.getScreenCTM().inverse().multiply(obj.getScreenCTM());
     }
 
+    function getCurrentValue() {
+        return algebra.getLastValue()
+    }
+
     return {
         setupCanvas: setupCanvas,
+        getCurrentValue: getCurrentValue
     };
 });

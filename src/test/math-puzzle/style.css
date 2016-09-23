@@ -3,6 +3,7 @@
     overflow: hidden;
     background-color: white;
     outline: rgba(0,0,0,0.8) solid 1px;
+    position: relative;
 }
 .exercise {
     margin: 10px 130px -210px 10px;
@@ -144,10 +145,12 @@ text.axes {
 
 .end-result {
     height: 30px;
-    width: 30px;
-    background-color: blue;
+    width: 85px;
     display: block;
     position: absolute;
-    right: 10px;
-    margin-top: -150px;
+    top: 90%;
+    margin-top: -50px;
+    right: 5px;
+    line-height: 30px;
+    font-size: 1.3em;
 }

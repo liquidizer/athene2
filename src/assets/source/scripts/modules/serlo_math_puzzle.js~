@@ -18,44 +18,37 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
     function makePuzzle(parent, obj) {
         var emog, svg, redraw, toggle, ops, op, i, palette, 
 		open = true, fullscreen=false;
-        var showResult=false;
 
         // status image
         emog = d3.select(parent)
             .append('div')
-            .attr('class', 'status')
-            //.attr('style', 'display:none');
+            .attr('class', 'status');
 
         // svg canvas
         svg = d3.select(parent)
             .append("svg")
             .attr('width', '100%')
-            .attr('viewBox', '0 0 600 400')
-            //.attr('style','display:none');
-
-        res = d3.select(parent)
-            .append("div")
-            .attr('class','end-result')
+            .attr('viewBox', '0 0 600 400');
 
         // make IE11 scale correcly, might not work on mobile
         if ("ActiveXObject" in window)
             svg.attr('height', svg.node().getBoundingClientRect().width * 2 / 3);
 
         // open/close logic
-	    toggle = function() {
-            open = !open;
-            redraw();
+	toggle = function() {
+	    open = !open;
+	    redraw();
         }
         redraw = function () {
             var evt = document.createEvent("CustomEvent");
             evt.initCustomEvent('resize', false, false, {});
             window.dispatchEvent(evt);
             if (!open)
-                fullscreen = false;
+                touch = false;
         };
         window.addEventListener('resize', function () {
             d3.select(parent).classed('open', open);
-            if (open && fullscreen) {
+            if (open && touch) {
                 var serlo_top = d3.select('#page .main')[0][0].offsetTop,
                     serlo_left = d3.select('#page .main')[0][0].offsetLeft,
                     width = Math.min(window.innerWidth - 20, 3 / 2 * (window.innerHeight - 20)),
@@ -69,7 +62,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     .transition()
                     .style('width', width + 'px')
                     .style('height', height + 'px');
-            } else if (open && !fullscreen) {
+            } else if (open && !touch) {
                 d3.select(parent)
                     .transition()
                     .style('height', parent.offsetWidth * 2 / 3 + 'px');
@@ -83,12 +76,9 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     .style('height', '90px');
             }
         });
-        //emog.on('click', function () { toggle(); });
-        //emog.on('touchstart', function () { touch = true; fullscreen=true; });
-        emog.on('click', function () { touch = true; fullscreen=!fullscreen;redraw(); });
-        emog.on('touchstart', function () { touch = true; fullscreen=true; redraw(); });
-
-        redraw();
+        emog.on('click', function () { toggle(); });
+        emog.on('touchstart', function () { touch = true; console.log('touch', touch)});
+	redraw();
 
         // arrow
         svg.append('path')
@@ -96,9 +86,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             .style('fill', 'lightgray');
 
         // insert the operators
-        // Änderungen phi
-        //var initialOp;
-        //initialOp=addOperand(svg)
         addOperand(svg)
           .attr('transform', 'translate(250,150)')
           .attr('data-goal', obj.split(/=/)[0]);
@@ -125,9 +112,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             case "pi" :
                 addAtom(op, "Math.PI", '\u03C0');
                 break;
-            case "!":
-                showResult=true;
-                break;
             default :
                 if (ops[i].match(/[0-9.]+/))
                     addAtom(op, ops[i]);
@@ -135,21 +119,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     addAtom(op, ops[i], ops[i].substring(1));
                 break;
             }
-        }
-
-        if (showResult) {
-            svg.on('mouseover',function () {
-                var val=touchop.getCurrentValue()
-                if(val){
-                    val=Math.round(val*1000)/1000;
-                    d3.select(parent).select(".end-result")
-                        .html("= "+val);
-                }
-                else{
-                    d3.select(parent).select(".end-result")
-                        .html("= ?")                
-                }
-            })
         }
         touchop.setupCanvas(svg[0][0]);
 
