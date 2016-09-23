@@ -80,7 +80,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         ops = obj.replace(/.*= */, '').split(/ +/);
         palette = addPalette(svg);
         for (i in ops) {
-            op = palette.append('g').attr('class', 'cloneme');
+            op = palette.append('g').attr('data-container-id',i);
             switch (ops[i]) {
             case "^" :
                 addPower(op);

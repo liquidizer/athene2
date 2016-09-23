@@ -7,7 +7,7 @@
  * @link        https://github.com/serlo-org/athene2 for the canonical source repository
  */
 /* global define */
-define(['math_puzzle_algebra'], function (algebra) {
+define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
     "use strict";
 
     // setup event listeners for the svg canvas
@@ -30,41 +30,26 @@ define(['math_puzzle_algebra'], function (algebra) {
         svgElement.parentNode.addEventListener('touchend', msUp);
         svgElement.addEventListener('mousedown', msBlur);
         svgElement.addEventListener('touchstart', msBlur);
-        setupCloneables(svgElement);
+        d3.select(svgElement).selectAll('[data-ismovable]')
+            .on('mousedown', grabElement)
+            .on('touchstart', grabElement);
         deepLayout(svgElement, true);
-
-        // setup cloneable elements from palette
-        function setupCloneables(svgElement) {
-            var  i, paletteEntries = svgElement.querySelectorAll('.cloneme');
-            for (i = 0; i < paletteEntries.length; ++i) {
-                paletteEntries[i].addEventListener('mousedown', duplicateElement);
-                paletteEntries[i].addEventListener('touchstart', duplicateElement);
-            }
-        }
 
         // setup event listeners for an element. This function is called
         // when an element is moved out of the palette
-        function duplicateElement(grabEvent) {
-            var operands, i,
-                elt = grabEvent.currentTarget.firstChild,
-                copy = elt.cloneNode(true);
-                //copy.setAttribute('style','display:none');
-            elt.parentNode.appendChild(copy);
+        function grabElement() {
+            var elt= d3.event.currentTarget,
+                container= elt.parentElement,
+                containerId= container.getAttribute('data-container-id');
 
-            elt.addEventListener('mousedown', msDown);
-            elt.addEventListener('touchstart', msDown);
-            operands = elt.querySelectorAll('.operand');
-            for (i = 0; i < operands.length; ++i) {
-                operands[i].removeAttribute('blocked');
-            }
-            if (grabEvent) {
-                elt.setAttribute('opacity', 0.5);
-                justGrabbed = true;
-                sendHome(elt);
+            if (containerId) {
+                d3.select(elt)
+                    .attr('data-original-container', containerId)
+                    .selectAll(".operand").attr("blocked","");
                 if (navigator.vibrate)
-                    navigator.vibrate(10);
-                msDown(grabEvent);
+                    navigator.vibrate(10)
             }
+            msDown(d3.event);
         }
 
         // Perform an initial layout of all objects on the screen.
@@ -137,14 +122,27 @@ define(['math_puzzle_algebra'], function (algebra) {
             return false;
         }
 
+        // Recursively put elements back into their palette home spot
+        function moveToPalette(elt) {
+            var paletteHome, child;
+            for (child of elt.querySelectorAll('[data-original-container]')) {
+                moveToPalette(child);
+            }
+            paletteHome = svgElement
+                .querySelector('[data-container-id="' +
+                    elt.getAttribute('data-original-container') +
+                    '"]');
+            if (paletteHome)
+                moveToGroup(elt, paletteHome);
+        }
+
         // This function is called when the mouse button is released.
         function msUp() {
             if (hand) {
                 hand.removeAttribute("pointer-events");
                 if (hand.getAttribute('opacity')) {
-                    var parent = hand.parentNode;
-                    parent.removeChild(hand);
-                    layout(parent);
+                    hand.setAttribute('opacity','');
+                    moveToPalette(hand);
                 }
                 hand = null;
                 svgElement.classList.remove("grabbed");
