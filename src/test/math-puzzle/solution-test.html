@@ -1,0 +1,63 @@
+<head>
+  <script src="../../assets/source/bower_components/requirejs/require.js"></script>
+  <link rel="stylesheet" href="style.css"></head>
+  <script>
+  requirejs.config({
+      baseUrl : '../../assets/source/',
+      paths: {
+          'math_puzzle' : 'scripts/modules/serlo_math_puzzle',
+          'math_puzzle_touchop' : 'scripts/modules/serlo_math_puzzle_touchop',
+          'math_puzzle_algebra' : 'scripts/modules/serlo_math_puzzle_algebra',
+          'jquery' : 'bower_components/jquery/jquery',
+          'd3' : 'bower_components/d3/d3',
+      }
+  })
+  require(["math_puzzle_algebra","jquery"], function(math_puzzle_algebra,$) {
+    var puzzles = document.querySelectorAll(".test");
+    for (var i=0; i<puzzles.length; ++i) {
+      var pass= math_puzzle_algebra.verify(puzzles[i]);
+      var expect= puzzles[i].getAttribute('data-expect');
+      if (JSON.stringify(pass)==expect) {
+        puzzles[i].setAttribute("class","passed");
+      }
+      else {
+        puzzles[i].setAttribute("class","failed");
+        $(puzzles[i]).append("<b>Got: "+math_puzzle_algebra.computeValue(puzzles[i])+"</b>")
+      }
+    }
+  })
+  </script>
+  <style>
+    .passed { background-color: green }
+    .failed { background-color: red }
+  </style>
+</head>
+<body class="">
+  <div class="test" data-expect="true">
+    3=3
+    <div data-goal="3">
+      <div data-value="3"></div>
+    </div>
+  </div>
+  <div class="test" data-expect="false">
+    3=4
+    <div data-goal="4">
+      <div data-value="3"></div>
+    </div>
+  </div>
+  <div class="test" data-expect="false">
+    3=4
+    <div data-goal="3">
+      <div data-value="3"></div>
+    </div>
+  </div>
+  <div class="test" data-expect="true">
+    1+1=2
+    <div data-goal="2">
+      <div data-value="#1 + #2">
+        <div data-value="1"></div>
+        <div data-value="1"></div>
+      </div>
+    </div>
+  </div>
+</body>

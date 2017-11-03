@@ -71,7 +71,9 @@ define([], function () {
         } else {
             // construct the objective function
             goal = obj.getAttribute("data-goal");
-            smile(svg, isEquivalent(value, goal));
+            pass = isEquivalent(value, goal);
+            smile(svg, pass);
+            return pass;
         }
     }
 
@@ -117,6 +119,7 @@ define([], function () {
 
     return {
         verify: verify,
-        getLastValue: getLastValue
+        getLastValue: getLastValue,
+        computeValue: computeValue
     };
 });
