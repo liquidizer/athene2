@@ -15,8 +15,8 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         if (fullscreen) evt.preventDefault();
     });
 
-    function makePuzzle(parent, obj) {
-        var emog, svg, redraw, toggle, ops, op, i, palette;
+    function makePuzzle(parent, challengeStr, startStructure) {
+        var emog, svg, redraw, toggle, operatorNames, operatorParent, i, palette, solution;
         var showResult=false;
 
         // status image
@@ -35,7 +35,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             .attr('class','end-result')
 
         // fullscreen logic
-	    toggleFullscreen = function() {
+  	    toggleFullscreen = function() {
             fullscreen = (fullscreen) ? undefined : parent;
             redraw();
         }
@@ -83,43 +83,20 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         // insert the operators
         //var initialOp;
         //initialOp=addOperand(svg)
-        addOperand(svg)
+        solution = addOperand(svg)
           .attr('transform', 'translate(250,150)')
-          .attr('data-goal', obj.split(/=/)[0]);
-        ops = obj.replace(/.*= */, '').split(/ +/);
+          .attr('data-goal', challengeStr.split(/=/)[0]);
+        operatorNames = challengeStr.replace(/.*= */, '').split(/ +/);
         palette = addPalette(svg);
-        for (i in ops) {
-            op = palette.append('g').attr('data-container-id',i);
-            switch (ops[i]) {
-            case "^" :
-                addPower(op);
-                break;
-            case "/" :
-                addDivide(op);
-                break;
-            case "*" :
-                addTimes(op);
-                break;
-            case "+" :
-                addPlus(op);
-                break;
-            case "-" :
-                addMinus(op);
-                break;
-            case "pi" :
-                addAtom(op, "Math.PI", '\u03C0');
-                break;
-            case "!":
-                showResult=true;
-                break;
-            default :
-                if (ops[i].match(/[0-9.]+/))
-                    addAtom(op, ops[i]);
-                if (ops[i].match(/^\$.*/))
-                    addAtom(op, ops[i], ops[i].substring(1));
-                break;
-            }
+        for (i in operatorNames) {
+          operatorParent = palette.append('g').attr('data-container-id',i);
+          addNamedOperator(operatorNames[i], operatorParent);
+          if (operatorNames[i] === "!")
+              showResult=true;
         }
+
+        if (startStructure)
+          initializeStructure(JSON.parse(startStructure), solution);
 
         if (showResult) {
             svg.on('mouseover',function () {
@@ -131,135 +108,179 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                 }
                 else{
                     d3.select(parent).select(".end-result")
-                        .html("= ?")                
+                        .html("= ?")
                 }
             })
         }
         touchop.setupCanvas(svg[0][0]);
+    }
 
-        // A palette for holding items
-        function addPalette(elt) {
-            var palette = elt.append('g')
-                .attr('class', 'palette')
-                .attr('transform', 'translate(0,330)')
-                .attr('data-layout', 'paletteLayout')
-                .attr('data-ismovable', 'false');
-            palette.append('rect')
-                .attr('width', 600).attr('height', 70).attr('fill', 'lightblue');
-            return palette;
+    function addNamedOperator(operatorName, parent) {
+        switch (operatorName) {
+        case "^" :
+            return addPower(parent);
+        case "/" :
+            return addDivide(parent);
+        case "*" :
+            return addTimes(parent);
+        case "+" :
+            return addPlus(parent);
+        case "-" :
+            return addMinus(parent);
+        case "pi" :
+            return addAtom(parent, "Math.PI", '\u03C0');
+        default :
+            if (operatorName.match(/[0-9.]+/))
+                return addAtom(parent, operatorName);
+            if (operatorName.match(/^\$.*/))
+                return addAtom(parent, operatorName, operatorName.substring(1));
+            break;
         }
+    }
 
-        // A literal placed on the screen
-        function addLiteral(elt, value) {
-            var len = value.toString().replace(/ /g, '').length;
-            elt.append('rect')
-                .attr('class', 'background')
-                .attr('height', '60')
-                .attr('rx', '5')
-                .attr('ry', '5')
-                .attr('width', 30 + 30 * len)
-                .attr('x', -15 * len);
-            elt.append('text')
-                .attr('transform', 'translate(15,45)')
-                .attr('class', 'atom')
-                .text(value.toString());
-        }
+    function initializeStructure(array, parent) {
+        var g, ops;
+        g= addNamedOperator(array[0], parent)
+        //solution.selectAll('g').attr('data-ismovable',false);
+        ops = g.selectAll('.operand');
+    //        addNamedOperator('1', d3.select(ops.node(0)))
+    //        addNamedOperator('2', d3.select(ops.node(1)))
+        ops.each(function(x, i) {
+          if (array[i+1].constructor == Array)
+            initializeStructure(array[i+1], d3.select(this));
+          else if (array[i+1] !== "")
+            addNamedOperator(array[i+1].toString(), d3.select(this));
+        })
+    }
 
-        // Atomic element with text
-        function addAtom(elt, value, text) {
-            var g = elt.append('g')
-                .attr("data-value", value)
-                .attr('data-ismovable', 'true');
-            addLiteral(g, text || value);
-            g[0][0].addEventListener('mousedown', touchop.msDown);
-        }
+    // A palette for holding items
+    function addPalette(elt) {
+        var palette = elt.append('g')
+            .attr('class', 'palette')
+            .attr('transform', 'translate(0,330)')
+            .attr('data-layout', 'paletteLayout')
+            .attr('data-ismovable', 'false');
+        palette.append('rect')
+            .attr('width', 600).attr('height', 70).attr('fill', 'lightblue');
+        return palette;
+    }
 
-        // Generic drop area for operator arguments
-        function addOperand(elt) {
-            var g = elt.append('g')
-                .attr('data-layout', 'snap')
-                .attr('class', 'operand');
-            g.append('rect')
-                .attr('height', '50')
-                .attr('width', '50')
-                .attr('rx', 5).attr('ry', 5)
-                .attr('class', 'background');
-            return g;
-        }
+    // A literal placed on the screen
+    function addLiteral(elt, value) {
+        var len = value.toString().replace(/ /g, '').length;
+        elt.append('rect')
+            .attr('class', 'background')
+            .attr('height', '60')
+            .attr('rx', '5')
+            .attr('ry', '5')
+            .attr('width', 30 + 30 * len)
+            .attr('x', -15 * len);
+        elt.append('text')
+            .attr('transform', 'translate(15,45)')
+            .attr('class', 'atom')
+            .text(value.toString());
+    }
 
-        function addOperator(elt) {
-            var g = elt.append('g')
-                .attr('data-ismovable', 'true');
-            g.append('rect')
-                .attr('class', "background")
-                .attr('rx', 5).attr('ry', 5);
-            return g;
-        }
+    // Atomic element with text
+    function addAtom(elt, value, text) {
+        var g = elt.append('g')
+            .attr("data-value", value)
+            .attr('data-ismovable', 'true');
+        addLiteral(g, text || value);
+        g[0][0].addEventListener('mousedown', touchop.msDown);
+        return g;
+    }
 
-        function addPower(elt) {
-            var g, exponent;
-            g = addOperator(elt)
-                .attr('data-value', 'Math.pow(#1, #2)')
-                .attr('data-priority', 91)
-                .attr('data-layout', 'horizontalLayout');
-            addOperand(g);
-            exponent = g.append('g').attr('data-priority', 80);
-            exponent.append('rect')
-                .attr('y', 50).attr('width', 1).attr('height', 1);
-            addOperand(exponent.append('g').attr('transform', 'scale(0.6) translate(0,-50)'));
-        }
+    // Generic drop area for operator arguments
+    function addOperand(elt) {
+        var g = elt.append('g')
+            .attr('data-layout', 'snap')
+            .attr('class', 'operand');
+        g.append('rect')
+            .attr('height', '50')
+            .attr('width', '50')
+            .attr('rx', 5).attr('ry', 5)
+            .attr('class', 'background');
+        return g;
+    }
 
-        function addDivide(elt) {
-            var g = addOperator(elt)
-                .attr('data-value', "#1 / #2")
-                .attr('data-priority', "99")
-                .attr('data-layout', "verticalLayout");
-            g.append('g')
-                .attr('transform', "scale(0.8)")
-                .attr('data-priority', "100");
-            addOperand(g);
-            g.append('rect')
-                .attr('width', 80)
-                .attr('height', 3)
-                .attr('data-layoutOpt', "stretch");
-            g.append('g')
-                .attr('transform', "scale(0.8)")
-                .attr('data-priority', "100");
-            addOperand(g);
-        }
+    function addOperator(elt) {
+        var g = elt.append('g')
+            .attr('data-ismovable', 'true');
+        g.append('rect')
+            .attr('class', "background")
+            .attr('rx', 5).attr('ry', 5);
+        return g;
+    }
 
-        // Multiplication operator
-        function addTimes(elt) {
-            var g = addOperator(elt)
-                .attr('data-value', "#1 * #2")
-                .attr('data-priority', "100")
-                .attr('data-layout', "horizontalLayout");
-            addOperand(g);
-            g.append('text').text('\u2022');
-            addOperand(g);
-        }
+    function addPower(elt) {
+        var g, exponent;
+        g = addOperator(elt)
+            .attr('data-value', 'Math.pow(#1, #2)')
+            .attr('data-priority', 91)
+            .attr('data-layout', 'horizontalLayout');
+        addOperand(g);
+        exponent = g.append('g').attr('data-priority', 80);
+        exponent.append('rect')
+            .attr('y', 50).attr('width', 1).attr('height', 1);
+        addOperand(exponent.append('g').attr('transform', 'scale(0.6) translate(0,-50)'));
+        return g;
+    }
 
-        // Addition operator
-        function addPlus(elt) {
-            var g = addOperator(elt)
-                .attr('data-value', "#1 + #2")
-                .attr('data-priority', "120")
-                .attr('data-layout', "horizontalLayout");
-            addOperand(g);
-            g.append('text').text('+');
-            addOperand(g);
-        }
+    function addDivide(elt) {
+        var g = addOperator(elt)
+            .attr('data-value', "#1 / #2")
+            .attr('data-priority', "99")
+            .attr('data-layout', "verticalLayout");
+        g.append('g')
+            .attr('transform', "scale(0.8)")
+            .attr('data-priority', "100");
+        addOperand(g);
+        g.append('rect')
+            .attr('width', 80)
+            .attr('height', 3)
+            .attr('data-layoutOpt', "stretch");
+        g.append('g')
+            .attr('transform', "scale(0.8)")
+            .attr('data-priority', "100");
+        addOperand(g);
+        return g;
+    }
 
-        // Difference operator
-        function addMinus(elt) {
-            var g = addOperator(elt)
-                .attr('data-value', "#1 - #2")
-                .attr('data-priority', "111")
-                .attr('data-layout', "horizontalLayout");
-            addOperand(g);
-            g.append('text').text('-');
-            addOperand(g);
-        }
+    // Multiplication operator
+    function addTimes(elt) {
+        var g = addOperator(elt)
+            .attr('data-value', "#1 * #2")
+            .attr('data-priority', "100")
+            .attr('data-layout', "horizontalLayout");
+        addOperand(g);
+        g.append('text').text('\u2022');
+        addOperand(g);
+        return g;
+    }
+
+    // Addition operator
+    function addPlus(elt) {
+        var g = addOperator(elt)
+            .attr('data-value', "#1 + #2")
+            .attr('data-priority', "120")
+            .attr('data-layout', "horizontalLayout");
+        addOperand(g);
+        g.append('text').text('+');
+        addOperand(g);
+        return g;
+    }
+
+    // Difference operator
+    function addMinus(elt) {
+        var g = addOperator(elt)
+            .attr('data-value', "#1 - #2")
+            .attr('data-priority', "111")
+            .attr('data-layout', "horizontalLayout");
+        addOperand(g);
+        g.append('text').text('-');
+        addOperand(g);
+        return g;
     }
 
     $.fn.MathPuzzle = function () {
@@ -270,4 +291,3 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     return { makePuzzle : makePuzzle };
 });
-

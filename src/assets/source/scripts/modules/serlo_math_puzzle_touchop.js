@@ -34,6 +34,7 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
             .on('mousedown', grabElement)
             .on('touchstart', grabElement);
         deepLayout(svgElement, true);
+        algebra.verify(svgElement);
 
         // setup event listeners for an element. This function is called
         // when an element is moved out of the palette
