@@ -85,6 +85,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         //initialOp=addOperand(svg)
         solution = addOperand(svg)
           .attr('transform', 'translate(250,150)')
+          .attr('data-frozen', true)
           .attr('data-goal', challengeStr.split(/=/)[0]);
         operatorNames = challengeStr.replace(/.*= */, '').split(/ +/);
         palette = addPalette(svg);
@@ -141,8 +142,9 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
     function initializeStructure(array, parent) {
         var g, ops;
         g= addNamedOperator(array[0], parent)
-        //solution.selectAll('g').attr('data-ismovable',false);
+        g.attr('data-frozen',true);
         ops = g.selectAll('.operand');
+        ops.attr('data-frozen', true);
     //        addNamedOperator('1', d3.select(ops.node(0)))
     //        addNamedOperator('2', d3.select(ops.node(1)))
         ops.each(function(x, i) {
@@ -150,7 +152,10 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             initializeStructure(array[i+1], d3.select(this));
           else if (array[i+1] !== "")
             addNamedOperator(array[i+1].toString(), d3.select(this));
-        })
+        });
+
+        literals = g.selectAll('.atom');
+        literals.attr('data-frozen', true);
     }
 
     // A palette for holding items
@@ -185,7 +190,8 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
     function addAtom(elt, value, text) {
         var g = elt.append('g')
             .attr("data-value", value)
-            .attr('data-ismovable', 'true');
+            .attr('data-ismovable', 'true')
+            .attr('class', 'atom');
         addLiteral(g, text || value);
         g[0][0].addEventListener('mousedown', touchop.msDown);
         return g;

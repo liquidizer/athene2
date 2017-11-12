@@ -50,6 +50,7 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
                 if (navigator.vibrate)
                     navigator.vibrate(10)
             }
+            
             msDown(d3.event);
         }
 
@@ -96,23 +97,23 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
             var evt = translateTouch(evt0),
                 grabbed = evt.target;
 
-            if (!hand && evt.target) {
-                // find signaling object
-                while (grabbed.getAttribute("data-ismovable") !== "true") {
-                    grabbed = grabbed.parentNode;
+                if (!hand && evt.target) {
+                    // find signaling object
+                    while (grabbed.getAttribute("data-ismovable") !== "true") {
+                        grabbed = grabbed.parentNode;
+                    }
+                    hand = grabbed;
+                    svgElement.classList.add("grabbed");
+
+                    // store mouse position. Will be updated when mouse moves.
+                    startPos = [evt.clientX, evt.clientY];
+                    hasMoved = false;
+
+                    // mark root after time out
+                    initLongClick(evt.clientX, evt.clientY);
+                    if (document.activeElement && document.activeElement.blur)
+                        document.activeElement.blur();
                 }
-                hand = grabbed;
-                svgElement.classList.add("grabbed");
-
-                // store mouse position. Will be updated when mouse moves.
-                startPos = [evt.clientX, evt.clientY];
-                hasMoved = false;
-
-                // mark root after time out
-                initLongClick(evt.clientX, evt.clientY);
-                if (document.activeElement && document.activeElement.blur)
-                    document.activeElement.blur();
-            }
         }
 
         // Mouse clicked on the background
@@ -151,9 +152,10 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
             justGrabbed = false;
         }
 
-        // Move the grabbed object "hand" with the mouse
+        // Move the grabbed object "hand" with the mouse if not frozen
         function msMove(evt0) {
-            if (hand) {
+
+            if (hand && (!hand.getAttribute('data-frozen'))) {
                 // compute relative mouse movements since last call
                 var dropTo, current, isTop, thresh, m,
                     evt = translateTouch(evt0),
