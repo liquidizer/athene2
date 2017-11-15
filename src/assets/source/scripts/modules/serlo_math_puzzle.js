@@ -15,9 +15,11 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         if (fullscreen) evt.preventDefault();
     });
 
-    function makePuzzle(parent, challengeStr, startStructure) {
+    function makePuzzle(parent, inputStr) {
         var emog, svg, redraw, toggle, operatorNames, operatorParent, i, palette, solution;
-        var showResult=false;
+        var showResult        = false;
+        var challengeStr      = inputStr.split('|')[0];
+        var startStructureStr = inputStr.split('|')[1];
 
         // status image
         emog = d3.select(parent)
@@ -96,8 +98,11 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
               showResult=true;
         }
 
-        if (startStructure)
-          initializeStructure(JSON.parse(startStructure), solution);
+        //TODO split('|') data
+        /*if (startStructure)
+          initializeStructure(JSON.parse(startStructure), solution);*/
+        if( startStructureStr )
+            initializeStructure( parse_pn ( startStructureStr ), solution )
 
         if (showResult) {
             svg.on('mouseover',function () {
@@ -150,12 +155,55 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         ops.each(function(x, i) {
           if (array[i+1].constructor == Array)
             initializeStructure(array[i+1], d3.select(this));
-          else if (array[i+1] !== "")
+          else if (array[i+1] !== '#')
             addNamedOperator(array[i+1].toString(), d3.select(this));
         });
 
         literals = g.selectAll('.atom');
         literals.attr('data-frozen', true);
+    }
+
+    //Parse polish notation String into start_structure JSON
+    function parse_pn ( string ) {
+
+        var temp = [];
+        var expression, op
+
+        expression = string.split('').reverse();
+
+        expression = expression.reduce(( acc, value ) => {
+            //console.log("value: ", value, "temp: ", temp, "acc: ", acc)
+            
+            if ( is_operator( value ) && (temp.length === 2)) {
+                
+                temp.push(value);
+                acc.push(temp);
+                temp = [];
+
+                return acc;
+            }
+
+            else if ( is_operator ( value )) {
+
+                if( temp.length !== 0) {
+                    
+                    acc.push(temp.pop());
+                }
+                acc.push(value);
+
+                return [acc];
+            }
+
+            else {
+
+                temp.push(value);
+                //console.log(temp)
+                return acc;
+            };
+
+    }, []);
+
+    return recursive_reverse( expression.pop());
     }
 
     // A palette for holding items
@@ -287,6 +335,29 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         g.append('text').text('-');
         addOperand(g);
         return g;
+    }
+
+    function recursive_reverse( arr ) {
+
+        return arr.map(( val ) => {
+
+            if ( val instanceof Array ) {
+
+                recursive_reverse( val );
+                return val.reverse();
+            }
+
+            else return val;
+        }).reverse();
+    }
+
+    function is_operator( char ) {
+
+        return char === '-' ||
+               char === '+' ||
+               char === '*' ||
+               char === '/' ||       
+               char === '^';
     }
 
     $.fn.MathPuzzle = function () {

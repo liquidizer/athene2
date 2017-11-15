@@ -16,8 +16,7 @@
     var puzzles = document.querySelectorAll(".math-puzzle");
     for (var i=0; i<puzzles.length; ++i) {
         math_puzzle.makePuzzle(puzzles[i],
-            puzzles[i].getAttribute("data-source"),
-            puzzles[i].getAttribute("data-start"));
+            puzzles[i].getAttribute("data-source"));
     }
   })
   require(["math_puzzle_algebra","jquery"], function(math_puzzle_algebra,$) {
@@ -189,10 +188,10 @@
   <div class="math-puzzle" data-source="2 = 1 1 +" data-start='["+","1",1]'>
       <div class="exercise">Build a formula that evaluates to two.</div>
   </div>
-  <div class="math-puzzle" data-source="2 = 1 1 +" data-start='["+","",1]'>
+  <div class="math-puzzle" data-source="2 = 1 1 + | +1#" data-start='["+","",1]'>
       <div class="exercise">Build a formula that evaluates to two.</div>
   </div>
-  <div class="math-puzzle" data-source="2 = 1 1 +" data-start='["*",["+","3",""],1]'>
+  <div class="math-puzzle" data-source="2 = 1 1 + | *-##+##" data-start='["*",["+","3",""],1]'>
       <div class="exercise">Build a formula that evaluates to two.</div>
   </div>
 
