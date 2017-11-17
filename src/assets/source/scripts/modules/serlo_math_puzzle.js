@@ -160,45 +160,21 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     //Parse polish notation String into start_structure JSON
     function parse_pn ( string ) {
-
-        var temp = [];
-        var expression, op
-
-        expression = string.split('').reverse();
-
-        expression = expression.reduce(( acc, value ) => {
-            //console.log("value: ", value, "temp: ", temp, "acc: ", acc)
-
-            if ( is_operator( value ) && (temp.length === 2)) {
-
-                temp.push(value);
-                acc.push(temp);
-                temp = [];
-
-                return acc;
+        return string
+          .split(' ')
+          .reverse()
+          .filter(function(x) {return x})
+          .reduce(( stack, value ) => {
+            var is_operator = value.match(/[+*/^-]/);
+            if ( is_operator ) {
+                stack.push([value, stack.pop(), stack.pop()]);
             }
-
-            else if ( is_operator ( value )) {
-
-                if( temp.length !== 0) {
-
-                    acc.push(temp.pop());
-                }
-                acc.push(value);
-
-                return [acc];
-            }
-
             else {
-
-                temp.push(value);
-                //console.log(temp)
-                return acc;
+                stack.push(value);
             };
-
-    }, []);
-
-    return recursive_reverse( expression.pop());
+            return stack;
+          }, [])
+          .pop();
     }
 
     // A palette for holding items
@@ -330,29 +306,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         g.append('text').text('-');
         addOperand(g);
         return g;
-    }
-
-    function recursive_reverse( arr ) {
-
-        return arr.map(( val ) => {
-
-            if ( val instanceof Array ) {
-
-                recursive_reverse( val );
-                return val.reverse();
-            }
-
-            else return val;
-        }).reverse();
-    }
-
-    function is_operator( char ) {
-
-        return char === '-' ||
-               char === '+' ||
-               char === '*' ||
-               char === '/' ||
-               char === '^';
     }
 
     $.fn.MathPuzzle = function () {

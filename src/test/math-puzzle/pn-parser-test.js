@@ -9,7 +9,7 @@ function parse_pn ( char_array ) {
         console.log("value: ", value, "temp: ", temp, "acc: ", acc)
         //
         if ( is_operator( value ) && (temp.length === 2)) {
-            
+
             temp.push(value);
             acc.push(temp);
             temp = [];
@@ -20,7 +20,7 @@ function parse_pn ( char_array ) {
         else if ( is_operator ( value )) {
 
             if( temp.length !== 0) {
-                
+
                 acc.push(temp.pop());
             }
             acc.push(value);
@@ -49,18 +49,18 @@ function evaluate_pn ( string ) {
     return expression.reduce(( acc, value ) => {
 
         if ( is_operator( value )) {
-            
+
             switch ( value ) {
 
                 case '+':
-                    
+
                     op1 = Number(acc.pop());
                     op2 = Number(acc.pop());
                     result = op1 + op2;
                     acc.push(result);
                     return acc;
                 break;
-            
+
                 case '-':
                     op1 = Number(acc.pop());
                     op2 = Number(acc.pop());
@@ -68,7 +68,7 @@ function evaluate_pn ( string ) {
                     acc.push(result);
                     return acc;
                 break;
-                
+
                 case '*':
                     op1 = Number(acc.pop());
                     op2 = Number(acc.pop());
@@ -76,7 +76,7 @@ function evaluate_pn ( string ) {
                     acc.push(result);
                     return acc;
                 break;
-                
+
                 case '/':
                     op1 = Number(acc.pop());
                     op2 = Number(acc.pop());
@@ -84,7 +84,7 @@ function evaluate_pn ( string ) {
                     acc.push(result);
                     return acc;
                 break;
-                
+
                 case '^':
                     op1 = Number(acc.pop());
                     op2 = Number(acc.pop());
@@ -92,7 +92,7 @@ function evaluate_pn ( string ) {
                     acc.push(result);
                     return acc;
                 break;
-                
+
             }
         }
 
@@ -123,7 +123,7 @@ function is_operator( char ) {
     return char === '-' ||
            char === '+' ||
            char === '*' ||
-           char === '/' ||       
+           char === '/' ||
            char === '^';
 }
 
@@ -131,7 +131,7 @@ function test() {
 
     //console.log(Array.prototype.map.call("SADLK++J/*+", ( val ) => isOperator(val)));
     //Array.prototype.reverse.call("ADSASDASD");
-    
+
     /*let arr = [1,2,3,4,5]
 
     console.log(arr.pop(), arr)*/
