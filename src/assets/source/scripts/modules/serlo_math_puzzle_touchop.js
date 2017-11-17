@@ -50,7 +50,7 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
                 if (navigator.vibrate)
                     navigator.vibrate(10)
             }
-            
+
             msDown(d3.event);
         }
 
@@ -538,7 +538,7 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
                     m = getTransformToElement(child, obj);
                     box = child.getBBox();
 
-                    m.a = m.d = 50 / (0.1 + box.height);
+                    m.a = m.d = 50 / Math.max(50, box.height);
                     m.e = x - m.a * box.x;
                     m.f = 10 - box.y * m.a;
                     setTransform(child, m);

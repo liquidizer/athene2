@@ -150,8 +150,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         g.attr('data-frozen',true);
         ops = g.selectAll('.operand');
         ops.attr('data-frozen', true);
-    //        addNamedOperator('1', d3.select(ops.node(0)))
-    //        addNamedOperator('2', d3.select(ops.node(1)))
         ops.each(function(x, i) {
           if (array[i+1].constructor == Array)
             initializeStructure(array[i+1], d3.select(this));
@@ -173,9 +171,9 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
         expression = expression.reduce(( acc, value ) => {
             //console.log("value: ", value, "temp: ", temp, "acc: ", acc)
-            
+
             if ( is_operator( value ) && (temp.length === 2)) {
-                
+
                 temp.push(value);
                 acc.push(temp);
                 temp = [];
@@ -186,7 +184,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
             else if ( is_operator ( value )) {
 
                 if( temp.length !== 0) {
-                    
+
                     acc.push(temp.pop());
                 }
                 acc.push(value);
@@ -356,7 +354,7 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         return char === '-' ||
                char === '+' ||
                char === '*' ||
-               char === '/' ||       
+               char === '/' ||
                char === '^';
     }
 
