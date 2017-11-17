@@ -24,12 +24,12 @@ define(['math_puzzle_algebra', 'd3'], function (algebra, d3) {
         // position for long click action, after which the top group is selected
             longClick = [0, 0];
 
-        svgElement.parentNode.addEventListener('mousemove', msMove);
-        svgElement.parentNode.addEventListener('touchmove', msMove);
-        svgElement.parentNode.addEventListener('mouseup', msUp);
-        svgElement.parentNode.addEventListener('touchend', msUp);
-        svgElement.addEventListener('mousedown', msBlur);
-        svgElement.addEventListener('touchstart', msBlur);
+        svgElement.parentNode.addEventListener('mousemove', msMove, {passive:false});
+        svgElement.parentNode.addEventListener('touchmove', msMove, {passive:false});
+        svgElement.parentNode.addEventListener('mouseup', msUp, {passive:false});
+        svgElement.parentNode.addEventListener('touchend', msUp, {passive:false});
+        svgElement.addEventListener('mousedown', msBlur, {passive:false});
+        svgElement.addEventListener('touchstart', msBlur, {passive:false});
         d3.select(svgElement).selectAll('[data-ismovable]')
             .on('mousedown', grabElement)
             .on('touchstart', grabElement);

@@ -11,9 +11,6 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
 
     // prevent unintended scrolling
     var fullscreen = undefined;
-    window.addEventListener('touchmove', function (evt) {
-        if (fullscreen) evt.preventDefault();
-    });
 
     function makePuzzle(parent, inputStr) {
         var emog, svg, redraw, toggle, operatorNames, operatorParent, i, palette, solution;
@@ -49,18 +46,16 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
         };
         window.addEventListener('resize', function () {
             if (fullscreen == parent) {
-                var serlo_top = d3.select('#page .main')[0][0].offsetTop,
-                    serlo_left = d3.select('#page .main')[0][0].offsetLeft,
-                    windowWidth = d3.select('body').node().offsetWidth,
+                var windowWidth = d3.select('body').node().offsetWidth,
                     width = Math.min(windowWidth - 20, 3 / 2 * (window.innerHeight - 20)),
                     height = Math.min(window.innerHeight - 20, 2 / 3 * (windowWidth - 20));
                 d3.select(parent)
                     .classed('fullscreen', true)
-                    .style('position', 'absolute')
+                    .style('position', 'fixed')
                     .style('z-index', 20)
                     .style('outline-width', Math.max(window.innerHeight - height, window.innerWidth - width) + 'px')
-                    .style('top', window.scrollY - serlo_top + (window.innerHeight - height) / 2 + 'px')
-                    .style('left', window.scrollX - serlo_left + (window.innerWidth - width) / 2 + 'px')
+                    .style('top', (window.innerHeight - height) / 2 + 'px')
+                    .style('left', (window.innerWidth - width) / 2 + 'px')
                     .style('width', width + 'px')
                     .style('height', height + 'px');
             } else {
@@ -68,7 +63,9 @@ define(['jquery', 'd3', 'math_puzzle_touchop'], function ($, d3, touchop) {
                     .classed('fullscreen', false)
                     .style('z-index', 0)
                     .style('outline-width', '1px')
-                    .style('position', 'relative')
+                    .style('position', '')
+                    .style('top', '')
+                    .style('left', '')
                     .style('width', '')
                     .style('height', '');
             }

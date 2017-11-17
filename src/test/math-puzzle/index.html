@@ -28,7 +28,9 @@
         refresh();
       });
     function refresh() {
-      document.getElementsByTagName('svg')[0].remove()
+      var remove= puzzle.querySelectorAll(':not(#exercise)');
+      for (var i=0; i<remove.length; ++i)
+        remove[i].remove();
       try {
         math_puzzle.makePuzzle(puzzle, input.value);
         input.removeAttribute('invalid')
