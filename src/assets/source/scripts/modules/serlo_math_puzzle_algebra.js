@@ -91,8 +91,8 @@ define([], function () {
                     if (!vars[j].match(/\./))
                         context[vars[j]] = Math.random() * 6 - 3;
                 }
-                value1 = eval(value.replace(/\$/g, 'context.'));
-                value2 = eval(goal.replace(/\$/g, 'context.'));
+                value1 = eval(value.replace(/\$/g, 'context.$'));
+                value2 = eval(goal.replace(/\$/g, 'context.$'));
                 if (isNaN(value1) !== isNaN(value2))
                     return false;
                 if (!isNaN(value1) && Math.abs(value1 - value2) > 1e-10)

@@ -25,18 +25,22 @@
       var pass= math_puzzle_algebra.verify(puzzles[i]);
       var expect= puzzles[i].getAttribute('data-expect');
       if (JSON.stringify(pass)==expect) {
-        puzzles[i].setAttribute("class","passed");
+        puzzles[i].setAttribute("class","test passed");
       }
       else {
-        puzzles[i].setAttribute("class","failed");
+        puzzles[i].setAttribute("class","test failed");
         $(puzzles[i]).append("<b>Got: " + math_puzzle_algebra.computeValue(puzzles[i]) + " instead of " + puzzles[i].firstElementChild.getAttribute('data-goal') + "</b>");
       }
     }
   })
   </script>
   <style>
-    .passed { background-color: green }
-    .failed { background-color: red }
+    .test {
+      margin: 2px;
+      padding: 2px;
+    }
+    .passed { background-color: YellowGreen }
+    .failed { background-color: coral }
     .math-puzzle {
       width: 300px;
     }
