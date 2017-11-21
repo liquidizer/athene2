@@ -14,17 +14,39 @@
       }
   })
   require(["math_puzzle"], function(math_puzzle) {
-    var puzzle= document.getElementById('math-puzzle');
-    var input= document.getElementById('puzzle-source');
-    var desc= document.getElementById('description');
-    var select= document.getElementById('select');
-    math_puzzle.makePuzzle(puzzle, input.value);
-    input.addEventListener('input', refresh);
+
+    var puzzle          = document.getElementById('math-puzzle');
+    var input_solution  = document.getElementById('puzzle-solution');
+    var input_palette   = document.getElementById('puzzle-palette');
+    var input_start     = document.getElementById('puzzle-start');
+    var desc            = document.getElementById('description');
+    var select_solution = document.getElementById('select-solution');
+    var select_palette  = document.getElementById('select-palette');
+    var select_start    = document.getElementById('select-start');
+
+
+    math_puzzle.makePuzzle(puzzle, input_solution.value
+                                + "="
+                                +  input_palette.value
+                                + "|"
+                                +  input_start.value);
+
+    input_solution.addEventListener('input', refresh);
+    input_palette.addEventListener('input', refresh);
+    input_start.addEventListener('input', refresh);
     desc.addEventListener('input', function(evt) {
         document.getElementById('exercise').innerHTML= desc.value;
-      })
-    select.addEventListener('change', function(evt) {
-        input.value= select.value;
+      });
+    select_solution.addEventListener('change', function(evt) {
+        input_solution.value = select_solution.value;
+        refresh();
+      });
+    select_palette.addEventListener('change', function(evt) {
+        input_palette.value = select_palette.value;
+        refresh();
+      });
+    select_start.addEventListener('change', function(evt) {
+        input_start.value = select_start.value;
         refresh();
       });
     function refresh() {
@@ -32,10 +54,22 @@
       for (var i=0; i<remove.length; ++i)
         remove[i].remove();
       try {
-        math_puzzle.makePuzzle(puzzle, input.value);
-        input.removeAttribute('invalid')
+
+        math_puzzle.makePuzzle(puzzle, input_solution.value
+                                     + "="
+                                     + input_palette.value
+                                     + "|"
+                                     + input_start.value);
+
+        input_solution.removeAttribute('invalid');
+        input_palette.removeAttribute('invalid');
+        input_start.removeAttribute('invalid');
+
       } catch(e) {
-        input.setAttribute('invalid', 'invalid')
+
+        input_solution.setAttribute('invalid', 'invalid');
+        input_palette.setAttribute('invalid', 'invalid');
+        input_start.setAttribute('invalid', 'invalid');
       }
     }
 
@@ -50,16 +84,39 @@
     <div class="main" style="position:relative">
         <h1>Math Puzzle Prototyping</h1>
         <p>
-          Puzzle source:<br/>
-          <input id="puzzle-source" style="width:70%;padding:2px" value="2 = 1 1 +"></input>
-          <select id="select" style="width:28%">
-            <option value="2 = 1 1 +">2 = 1 1 +</option>
-            <option value="4 = 1 2 2 ^">4 with power</option>
-            <option value="12 = 1 2 3 1 2 3 + + + * | + # #">12</option>
-            <option value="$x+1 = 1 2 3 + $x $y">x+1</option>
-            <option value="2/$x = 1 2 3 $x * / ^">2/x</option>
-            <option value="$a*$b*Math.pow($x, $b-1) = 1 $a $b $x - * ^">a b x^(b-1)</option>
-            <option value="$x+2 = 1 2 4 $x + - *">x+2</option>
+          Puzzle solution:<br/>
+          <input id="puzzle-solution" style="width:70%;padding:2px" value="2"></input>
+          <select id="select-solution" style="width:28%">
+            <option value="2">2 = 1 1 +</option>
+            <option value="4">4 with power</option>
+            <option value="12">12</option>
+            <option value="$x+1">x+1</option>
+            <option value="2/$x">2/x</option>
+            <option value="$a*$b*Math.pow($x, $b-1)">a b x^(b-1)</option>
+            <option value="$x+2">x+2</option>
+          </select>
+        </p>
+        <p>
+          Puzzle palette:<br/>
+          <input id="puzzle-palette" style="width:70%;padding:2px" value="1 1 +"></input>
+          <select id="select-palette" style="width:28%">
+            <option value="1 1 +">1 1 +</option>
+            <option value="1 2 2 ^">1 2 2 ^</option>
+            <option value="1 2 3 1 2 3 + + + *">1 2 3 1 2 3 + + + *</option>
+            <option value="1 2 3 + $x $y">1 2 3 + $x $y</option>
+            <option value="1 2 3 $x * / ^">1 2 3 $x * / ^</option>
+            <option value="1 $a $b $x - * ^">1 $a $b $x - * ^</option>
+            <option value="1 2 4 $x + - *">1 2 4 $x + - *</option>
+          </select>
+        </p>
+        <p>
+          Puzzle start:<br/>
+          <input id="puzzle-start" style="width:70%;padding:2px" value=""></input>
+          <select id="select-start" style="width:28%">
+            <option value="+ # #">+ # #</option>
+            <option value="- # #">- # #</option>
+            <option value="* # #">* # #</option>
+            <option value="/ # #">/ # #</option>
           </select>
         </p>
         <p>
