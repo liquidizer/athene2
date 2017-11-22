@@ -1,6 +1,7 @@
 <html>
 <head>
   <script src="../../assets/source/bower_components/requirejs/require.js"></script>
+  <script src="./copy-to-clipboard.js"></script>
   <link rel="stylesheet" href="style.css"></head>
   <script>
   requirejs.config({
@@ -23,6 +24,7 @@
     var select_solution = document.getElementById('select-solution');
     var select_palette  = document.getElementById('select-palette');
     var select_start    = document.getElementById('select-start');
+    var clipboard_input = document.querySelector('.clipboard-cms-input');
 
 
     math_puzzle.makePuzzle(puzzle, input_solution.value
@@ -34,21 +36,37 @@
     input_solution.addEventListener('input', refresh);
     input_palette.addEventListener('input', refresh);
     input_start.addEventListener('input', refresh);
+
     desc.addEventListener('input', function(evt) {
         document.getElementById('exercise').innerHTML= desc.value;
       });
+
     select_solution.addEventListener('change', function(evt) {
         input_solution.value = select_solution.value;
         refresh();
       });
+
     select_palette.addEventListener('change', function(evt) {
         input_palette.value = select_palette.value;
         refresh();
       });
+
     select_start.addEventListener('change', function(evt) {
         input_start.value = select_start.value;
         refresh();
       });
+
+    clipboard_input.addEventListener('click', function(evt) {
+
+      let cms_string = input_solution.value
+                     + "="
+                     +  input_palette.value
+                     + "|"
+                     +  input_start.value;
+
+      copyTextToClipboard( cms_string );
+    });
+
     function refresh() {
       var remove= puzzle.querySelectorAll(':not(#exercise)');
       for (var i=0; i<remove.length; ++i)
@@ -126,6 +144,11 @@
         <div id="math-puzzle" class="math-puzzle" data-source="2 = 1 1 +">
             <div class="exercise" id="exercise">Problem description</div>
         </div>
+
+        <p>
+          <button class="clipboard-cms-input">Copy CMS-ready text to clipboard</button>
+        </p>
+
     </div>
 </body>
 </html>
